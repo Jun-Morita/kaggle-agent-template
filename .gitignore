@@ -39,6 +39,7 @@ workspace/**/catboost_info/
 submit/**/model/
 submit/**/models/
 submit/**/*.csv
+!submit/submissions.csv
 submit/**/*.zip
 submit/**/*.ipynb
 

@@ -50,6 +50,8 @@
 ./run.sh configs/variant.yaml
 ```
 
+- Run metadata:
+
 ## Results
 
 | Metric | CV | LB | Notes |

@@ -7,7 +7,7 @@
 作業開始時は次を確認する。
 
 1. `competition/overview.md`
-2. `references/knowledge/*.md`
+2. `references/knowledge/INDEX.md`
 3. 最新の `daily_reports/*.md`
 4. GPU 利用可否が未確認なら `uv run python scripts/check_gpu.py`
 5. `git status --short`
@@ -23,6 +23,13 @@
 - Validation の fold method、grouping key、leakage risks
 - Rules の external data、pretrained models、internet
 
+## 実行可能なガード
+
+- metric を実装・変更したら `src/kaggle_agent_template/metrics.py` と `tests/` を更新し、`uv run pytest` を実行する。
+- 提出CSVを作ったら `scripts/validate_submission.py` で `sample_submission.csv` と突き合わせる。
+- 提出したら `submit/SUBMISSIONS.md` に人間向けの要約を書き、`submit/submissions.csv` に機械可読ログを残す。
+- 実験実行時は seed を適用し、`results/run_metadata.json` に git SHA、config hash、主要ライブラリversionを残す。
+
 ## 環境とGPU
 
 - Python 実行、lint、notebook 起動は `uv run` 経由を基本にする。
@@ -35,7 +42,7 @@
 ## 進め方
 
 1. `competition/overview.md` にコンペ情報を整理する。
-2. notebook、discussion、外部記事から使う知識を `references/knowledge/` に要約する。
+2. notebook、discussion、外部記事から使う知識を `references/knowledge/` に要約し、`INDEX.md` を更新する。
 3. `workspace/expNNN_name/` に実験ディレクトリを作る。
 4. 実験ごとに `SESSION_NOTES.md` へ仮説、変更、結果、出典を書く。
 5. その日の判断と次アクションを `daily_reports/YYYYMMDD.md` に集約する。
@@ -46,6 +53,7 @@
 - Kaggle notebook、discussion、外部記事を読んだら、使えそうな知識を `references/knowledge/` に md で残す。
 - raw の HTML、ipynb、スクリーンショット、取得ファイルは `references/raw/` に置く。raw は Git に入れない。
 - md には URL、取得日、作者、対象コンペ、要点、使える場面、リスク、実験候補を書く。
+- 重要な知識を追加したら `references/knowledge/INDEX.md` も更新する。
 - 内容をそのまま長く貼らない。要約し、出典を明記する。
 - notebook や discussion 由来のアイデアを実験に使う場合は、`SESSION_NOTES.md` に出典を書く。
 - 提出に効いた外部知識は `submit/SUBMISSIONS.md` にも出典を残す。
@@ -59,6 +67,8 @@
 - 実験ディレクトリには `SESSION_NOTES.md`, `config.yaml`, `run.sh`, `train.py` を置く。
 - 同じコードでパラメータだけを変える場合は、同じ実験ディレクトリ内の `configs/*.yaml` に分ける。大きく方針が変わる場合だけ新しい実験ディレクトリを作る。
 - seed、fold、metric、主要パラメータは config に置く。
+- seed は `kaggle_agent_template.repro.set_seed()` で適用する。
+- 実験時は `results/run_metadata.json` に git SHA と config hash を残す。
 - fold はデータ単位を確認してから決める。group や時系列がある場合はランダム KFold にしない。
 - fold を作ったら `workspace/folds/` に保存し、使った version を `SESSION_NOTES.md` と config に記録する。
 - 前処理の fit は train fold のみで行う。
@@ -81,7 +91,9 @@ MCP の分析結果は、返された artifact を必ず読んでから考察す
 ## 提出前チェック
 
 - 行数、列名、ID 順序、欠損、値域を確認する。
+- `uv run python scripts/validate_submission.py --sample data/raw/sample_submission.csv --submission submit/vNNN_expNNN_name/submission.csv` を実行する。
 - 提出元の実験、fold、モデル、CV、推論設定を記録する。
+- `uv run python scripts/record_submission.py ...` で `submit/submissions.csv` に追記する。
 - CSV 提出は `templates/submit_csv/`、Kaggle kernel 提出は `templates/submit_kernel/` を必要に応じてコピーして使う。
 - Kaggle への実提出はユーザー承認後に行う。
 
