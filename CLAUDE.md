@@ -33,6 +33,7 @@
 ## 環境とGPU
 
 - Python 実行、lint、notebook 起動は `uv run` 経由を基本にする。
+- `uv sync` 後は `src/kaggle_agent_template/` が editable install される。手動の `PYTHONPATH` 追加に依存しない。
 - 環境構築後は `uv run python scripts/check_gpu.py` で GPU 利用可否を確認する。
 - GPU が使える場合は、コンペのタスクに合う GPU 対応ライブラリを優先して検討する。
 - PyTorch などの重い GPU 依存は、コンペで必要になってから追加する。

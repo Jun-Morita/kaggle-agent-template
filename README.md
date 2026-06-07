@@ -34,6 +34,8 @@ uv sync
 pre-commit install
 ```
 
+`uv sync` により `src/kaggle_agent_template/` が editable install されます。リポジトリ内では、実験ディレクトリからでも `uv run python train.py` で共有ユーティリティを import できます。
+
 Python 3.12 が未導入の場合:
 
 ```bash
