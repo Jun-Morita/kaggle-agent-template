@@ -15,13 +15,16 @@ __pycache__/
 # Secrets
 .env
 .env.*
+!.env.example
 .netrc
 kaggle.json
 
 # Local AI agent state
 .agents/
 .codex/
-.claude/
+.claude/*
+!.claude/skills/
+!.claude/skills/**
 
 # Kaggle data and outputs
 input/

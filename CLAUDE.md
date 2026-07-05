@@ -1,6 +1,6 @@
 # Kaggle Agent Template
 
-このリポジトリは、Claude Code で Kaggle 実験を進めるための軽量テンプレートです。
+このリポジトリは、Claude Code で Kaggle を中心としたデータ分析コンペを進めるための軽量テンプレートです。
 
 ## まず読む
 
@@ -88,6 +88,24 @@ MCP は最初から必須にしない。データ理解や notebook 生成を繰
 - `notebook_writer`: 実験ディレクトリ内の notebook に markdown/code セルを追加する。ただし再利用する処理は `.py` に移す。
 
 MCP の分析結果は、返された artifact を必ず読んでから考察する。コード生成だけで判断しない。
+
+## Kaggle skill は任意拡張
+
+Kaggle コンペで `nvidia-kaggle` plugin / `nvidia-kaggle-skill` が使える場合は、overview、rules、public notebook、discussion、writeup、kernel reproduction、kernel submission、dataset upload の調査や操作に使ってよい。
+ただし、Kaggle 以外のコンペでは必須にしない。
+
+project-local skill は `.claude/skills/` に置く。skill を使う前に、対象 skill の `SKILL.md` と参照先 workflow markdown を読む。
+第三者 skill に含まれる `scripts/` は外部コードとして扱い、実行前に何をするか確認する。
+
+使う場合も、このリポジトリの運用ルールを優先する。
+
+- 取得した competition overview、rules、metric、submission 情報は `competition/overview.md` に反映する。
+- notebook、discussion、writeup 由来の知識は `references/knowledge/` に出典付きで要約し、`INDEX.md` を更新する。
+- 再現した kernel や notebook は、実験に使うなら `workspace/expNNN_name/` に整理する。raw 取得物は `references/raw/` に置き、Git に入れない。
+- skill が生成した report、cache、download を読んでから判断する。生成物の存在だけで採用しない。
+- `KAGGLE_API_TOKEN` は `.env` または環境変数から読む。secret として扱い、表示、ログ出力、commit をしない。
+- `.env.example` はサンプルとして管理するが、実トークン入りの `.env` は Git に入れない。
+- competition submission、dataset upload、public dataset 作成は外部に影響するため、必ずユーザー承認後に行う。
 
 ## 提出前チェック
 

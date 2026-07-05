@@ -205,6 +205,92 @@ Claude Code への依頼例:
 MCP は任意拡張です。最初から必須にしません。
 必要になったら、データ情報を返す `data_information`、小さな分析を実行する `analysis_executor`、notebook にセルを追加する `notebook_writer` の3種類に分けて追加します。
 
+## Kaggle 向け任意拡張
+
+このテンプレートは Kaggle 以外のデータ分析コンペでも使えるように、特定サービスの plugin や skill を必須にしません。
+Kaggle コンペで、overview、rules、public notebook、discussion、writeup、kernel submission などの調査や操作を効率化したい場合は、NVIDIA の `nvidia-kaggle` plugin を任意で追加できます。
+
+### Claude Code で使う方法
+
+Claude Code では、主に2つの使い方があります。
+
+#### 方法A: ユーザー環境に plugin として入れる
+
+NVIDIA の案内では、Claude Code で plugin として使う場合は次のコマンドを実行します。
+
+```bash
+claude plugin marketplace add https://github.com/NVIDIA/nvidia-kaggle.git
+claude plugin install nvidia-kaggle@nvidia-kaggle --scope user
+```
+
+`--scope user` はユーザーの Claude Code 環境に plugin を入れる指定です。つまり、このリポジトリに plugin 本体を commit するものではありません。
+チームや別マシンで同じ workflow を使う場合は、各ユーザーが自分の Claude Code 環境に plugin を入れます。
+
+Claude Code のバージョンによって plugin コマンドの option が変わる可能性があります。うまく動かない場合は、先に次を確認してください。
+
+```bash
+claude plugin --help
+claude plugin install --help
+```
+
+`--scope user` が使えないバージョンでは、表示された help に従って install してください。
+
+#### 方法B: プロジェクト内に skill として置く
+
+このリポジトリだけで使いたい場合は、Claude Code の project-local skill として `.claude/skills/` に置く方法もあります。
+この方式では、skill はこのプロジェクトの一部として管理されます。
+
+```text
+.claude/skills/
+└─ nvidia-kaggle-skill/
+   ├─ SKILL.md
+   ├─ kernel-setup.md
+   ├─ kernels.md
+   ├─ research-brief.md
+   ├─ submission.md
+   ├─ writeups.md
+   └─ scripts/
+```
+
+NVIDIA の `skills/nvidia-kaggle-skill/` ディレクトリを使う場合は、`SKILL.md` だけでなく、workflow markdown files と `scripts/` も一緒に置きます。
+このテンプレートでは置き場所として `.claude/skills/README.md` だけを用意しています。外部コードを同梱する場合は、更新方法、ライセンス、差分管理を決めてから追加してください。
+
+project-local skill はリポジトリをcloneした人にも共有できます。一方で、第三者のskillには実行スクリプトが含まれることがあるため、追加・更新時は内容を読んでから使います。
+
+### Kaggle API token
+
+Kaggle API を使う workflow では `KAGGLE_API_TOKEN` が必要です。実トークンは `.env` や shell の環境変数に置き、Git には入れません。
+
+このリポジトリには `.env.example` だけを commit しています。ローカルでは次のように作ります。
+
+```bash
+cp .env.example .env
+```
+
+その後、`.env` の値を自分の Kaggle token に置き換えます。
+
+```dotenv
+KAGGLE_API_TOKEN=kgat_your_actual_token_here
+```
+
+`.env` は `.gitignore` で除外されています。`git status --short` に `.env` が出てこないことを確認してください。
+
+Claude Code に依頼する場合:
+
+```text
+NVIDIA nvidia-kaggle skill を使って Kaggle の competition overview を取得してください。
+KAGGLE_API_TOKEN は .env から読み込んでください。トークン値は表示しないでください。
+取得結果は competition/overview.md に要約して反映してください。
+```
+
+使う場合も、このリポジトリの記録ルールを優先します。
+
+- competition overview / rules / metric は `competition/overview.md` に反映する
+- notebook / discussion / writeup の要約は `references/knowledge/` に出典付きで残す
+- kernel や notebook を再現する場合は `workspace/expNNN_name/` か `references/raw/` に整理する
+- 提出した場合は `submit/SUBMISSIONS.md` と `submit/submissions.csv` に記録する
+- competition submission、dataset upload、public dataset 作成は、必ずユーザー承認後に行う
+
 ## Git 運用
 
 Claude Code は作業開始時に `git status --short` を見て状況を把握します。未コミットの差分が多いと、どこまでが完了済みで、どこからが作業中か判断しにくくなります。
