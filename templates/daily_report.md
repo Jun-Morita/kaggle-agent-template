@@ -21,6 +21,12 @@
 
 - 
 
+## CV / LB
+
+- Plot:
+- Correlation / gap:
+- Validation concern:
+
 ## Knowledge / References
 
 - 
