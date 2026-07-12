@@ -13,4 +13,5 @@
 - 提出前に `scripts/validate_submission.py` で行数、列名、欠損、値域、ID の順序を確認する。
 - 提出後に `scripts/record_submission.py` で `submit/submissions.csv` に追記する。
 - Public LB を記録したら `scripts/plot_cv_lb.py` で `docs/figures/cv_lb_correlation.png` を更新する。
+- 実験の詳細は元実験の `SESSION_NOTES.md` に残し、ここには提出結果と採否理由の要約だけを書く。
 - 実アップロードはユーザー承認後に行う。

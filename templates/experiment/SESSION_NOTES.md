@@ -14,12 +14,19 @@
 
 -
 
+## Acceptance Gate
+
+- Primary metric minimum improvement:
+- Stability constraint (fold / time / group, if needed):
+- Fixed before run: yes / no
+
 ## Validation Setup
 
 - Fold file:
 - Fold reason:
 - Metric implementation:
 - Metric sanity check:
+- Fold-safe feature checklist completed: yes / no
 
 ## Changes
 

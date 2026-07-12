@@ -10,3 +10,5 @@
 - 試したアプローチ、採用した判断、失敗した案
 
 新しいコンペでは `docs/competition_report.md` を埋めていく。
+
+特徴量実装前と CV / LB 乖離時は `validation_checklist.md` を使い、fold-safe、採択条件、分布差を確認する。

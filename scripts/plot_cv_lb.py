@@ -7,6 +7,23 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 REQUIRED_COLUMNS = ["version", "cv", "public_lb"]
+MIN_CORRELATION_RECORDS = 3
+
+
+def _correlation(records: pd.DataFrame) -> float | None:
+    if len(records) < MIN_CORRELATION_RECORDS:
+        return None
+    correlation = records["cv"].corr(records["public_lb"])
+    return None if pd.isna(correlation) else float(correlation)
+
+
+def summarize_correlations(
+    records: pd.DataFrame, recent_window: int = 5
+) -> tuple[float | None, float | None]:
+    if recent_window < MIN_CORRELATION_RECORDS:
+        raise ValueError(f"recent_window must be at least {MIN_CORRELATION_RECORDS}")
+
+    return _correlation(records), _correlation(records.tail(recent_window))
 
 
 def load_cv_lb_records(log_path: Path) -> pd.DataFrame:
@@ -23,7 +40,11 @@ def load_cv_lb_records(log_path: Path) -> pd.DataFrame:
     return records
 
 
-def plot_cv_lb(records: pd.DataFrame, output_path: Path) -> None:
+def plot_cv_lb(
+    records: pd.DataFrame,
+    output_path: Path,
+    recent_window: int = 5,
+) -> tuple[float | None, float | None]:
     if records.empty:
         raise ValueError("no rows with both cv and public_lb were found")
 
@@ -45,12 +66,17 @@ def plot_cv_lb(records: pd.DataFrame, output_path: Path) -> None:
     ax.set_title("CV vs Public LB")
     ax.grid(True, alpha=0.25)
 
-    if len(records) >= 2:
-        correlation = records["cv"].corr(records["public_lb"])
+    overall_correlation, recent_correlation = summarize_correlations(records, recent_window)
+    labels = []
+    if overall_correlation is not None:
+        labels.append(f"all corr = {overall_correlation:.4f} (n={len(records)})")
+    if recent_correlation is not None and len(records) > recent_window:
+        labels.append(f"recent corr = {recent_correlation:.4f} (n={recent_window})")
+    if labels:
         ax.text(
             0.02,
             0.98,
-            f"corr = {correlation:.4f}",
+            "\n".join(labels),
             transform=ax.transAxes,
             va="top",
             ha="left",
@@ -60,20 +86,38 @@ def plot_cv_lb(records: pd.DataFrame, output_path: Path) -> None:
     fig.tight_layout()
     fig.savefig(output_path, dpi=160)
     plt.close(fig)
+    return overall_correlation, recent_correlation
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--log", type=Path, default=Path("submit/submissions.csv"))
     parser.add_argument("--output", type=Path, default=Path("docs/figures/cv_lb_correlation.png"))
+    parser.add_argument("--recent-window", type=int, default=5)
+    parser.add_argument("--warn-below", type=float, default=0.3)
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
     records = load_cv_lb_records(args.log)
-    plot_cv_lb(records, args.output)
+    overall_correlation, recent_correlation = plot_cv_lb(records, args.output, args.recent_window)
     print(f"saved: {args.output}")
+    if len(records) < MIN_CORRELATION_RECORDS:
+        print(f"diagnostic: insufficient data (need {MIN_CORRELATION_RECORDS} submissions)")
+        return
+    if overall_correlation is None:
+        print("diagnostic: correlation is undefined (CV or Public LB may be constant)")
+        return
+
+    recent = "n/a" if recent_correlation is None else f"{recent_correlation:.4f}"
+    print(f"correlation: overall={overall_correlation:.4f}, recent={recent}")
+    active_correlation = overall_correlation if recent_correlation is None else recent_correlation
+    if active_correlation < args.warn_below:
+        print(
+            "warning: CV/LB correlation is weak; audit validation before increasing "
+            "submission frequency"
+        )
 
 
 if __name__ == "__main__":

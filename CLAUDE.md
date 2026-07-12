@@ -29,7 +29,7 @@
 - metric を実装・変更したら `src/kaggle_agent_template/metrics.py` と `tests/` を更新し、`uv run pytest` を実行する。
 - 提出CSVを作ったら `scripts/validate_submission.py` で `sample_submission.csv` と突き合わせる。
 - 提出したら `submit/SUBMISSIONS.md` に人間向けの要約を書き、`submit/submissions.csv` に機械可読ログを残す。
-- Public LB を記録したら `scripts/plot_cv_lb.py` で CV / LB plot を更新する。
+- Public LB を記録したら `scripts/plot_cv_lb.py` で CV / LB plot と直近傾向を更新する。
 - 実験実行時は seed を適用し、`results/run_metadata.json` に git SHA、config hash、主要ライブラリversionを残す。
 
 ## 環境とGPU
@@ -70,6 +70,7 @@
 
 - 1 実験 1 ディレクトリで管理する。1 notebook だけで完結させない。
 - 1 実験 1 仮説を基本にする。
+- 実験開始前に採択条件を `SESSION_NOTES.md` に書く。指標や subgroup はコンペに合わせる。
 - notebook は EDA や試行錯誤に使う。再実行したい学習・推論は `.py` に移す。
 - 実験ディレクトリには `SESSION_NOTES.md`, `config.yaml`, `run.sh`, `train.py` を置く。
 - 同じコードでパラメータだけを変える場合は、同じ実験ディレクトリ内の `configs/*.yaml` に分ける。大きく方針が変わる場合だけ新しい実験ディレクトリを作る。
@@ -80,10 +81,13 @@
 - fold はデータ単位を確認してから決める。group や時系列がある場合はランダム KFold にしない。
 - fold を作ったら `workspace/folds/` に保存し、使った version を `SESSION_NOTES.md` と config に記録する。
 - 前処理の fit は train fold のみで行う。
+- target、集約、ランキング、encoding を使う特徴量は `docs/validation_checklist.md` で fold-safe か確認する。
 - metric 実装は、小さい手計算ケースや公開 baseline と照合してから実験に使う。
-- CV と LB がずれたら、モデルより先に fold と metric 実装を疑う。
-- 提出ログが2件以上ある場合は、`uv run python scripts/plot_cv_lb.py` で CV / LB plot を更新し、`docs/competition_report.md` に解釈を書く。
+- CV と LB がずれたら、モデルより先に fold、metric、分布差、リークを疑う。
+- CV / LB が3件そろったら相関を診断し、以後は Public LB 更新ごとに plot を更新する。直近5件の相関が弱ければ追加提出より先に validation を監査する。少数点の相関だけで自動採否しない。
+- 実験詳細は `SESSION_NOTES.md` に残す。`submit/SUBMISSIONS.md` は提出結果と判断の要約だけにする。
 - データ、モデル、提出物などの大容量ファイルは Git に入れない。
+- 中間モデルと OOF は Git 管理外に置き、anchor、提出再現、比較に不要な成果物は定期的に削除する。
 
 ## MCP は任意拡張
 

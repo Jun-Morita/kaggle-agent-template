@@ -12,6 +12,8 @@ Claude Code で Kaggle などのデータ分析コンペを進めるための、
 3. 実験は `workspace/` に分けて残す
 4. 結果と判断は日報と提出履歴に書く
 
+対象は、Claude Code を使って Kaggle または同様のデータ分析コンペを進めたい人です。モデルやデータは同梱せず、コンペごとの作業を整理・再現するための土台だけを提供します。
+
 ## このテンプレートが役に立つこと
 
 - Claude Code が作業開始時に読むファイルを固定できる
@@ -24,49 +26,26 @@ Claude Code で Kaggle などのデータ分析コンペを進めるための、
 
 ## Quick Start
 
+事前に Git、[uv](https://docs.astral.sh/uv/getting-started/installation/)、[Claude Code](https://docs.anthropic.com/en/docs/claude-code/getting-started) をインストールします。Kaggleで使う場合は、アカウント作成とコンペへの参加も必要です。
+
 ```bash
 git clone https://github.com/Jun-Morita/kaggle-agent-template.git
 cd kaggle-agent-template
 
-uv venv --python 3.12
-source .venv/bin/activate
 uv sync
-pre-commit install
+uv run pre-commit install
+uv run pytest
+claude
 ```
 
-`uv sync` により `src/kaggle_agent_template/` が editable install されます。リポジトリ内では、実験ディレクトリからでも `uv run python train.py` で共有ユーティリティを import できます。
+`uv sync` が仮想環境と依存関係を準備します。以後のPythonコマンドは、仮想環境を手動でactivateせず `uv run ...` で実行できます。
 
 Python 3.12 が未導入の場合:
 
 ```bash
 uv python install 3.12
-uv venv --python 3.12
-source .venv/bin/activate
 uv sync
 ```
-
-## GPU チェック
-
-環境構築後、まず GPU が使えるか確認します。
-
-```bash
-uv run python scripts/check_gpu.py
-```
-
-確認すること:
-
-- `nvidia-smi` で GPU と driver が見えるか
-- PyTorch を入れている場合、`torch.cuda.is_available()` が `True` か
-- GPU が見えているのにライブラリから使えない場合、GPU対応版のMLライブラリを入れ直す必要があるか
-
-テンプレート本体には PyTorch などの重い GPU 依存は入れていません。コンペの種類に合わせて、Claude Code に次のように依頼してください。
-
-```text
-scripts/check_gpu.py の結果を見て、このコンペで使うモデルに必要なGPU対応ライブラリを提案してください。
-導入コマンドは公式ドキュメントに基づいてください。
-```
-
-Kaggle Notebook で学習や推論を行う場合も、GPU accelerator が有効か、コンペルールで internet / external data / pretrained model が許可されているかを確認します。
 
 ## 最初に Claude Code に頼むこと
 
@@ -74,19 +53,53 @@ Claude Code を開いたら、まず次のように依頼します。
 
 ```text
 CLAUDE.md を読んで、このリポジトリの運用ルールに従ってください。
+参加するコンペのURLは <competition-url> です。
 まず competition/overview.md の未記入項目を確認し、不足情報を質問してください。
 ```
 
 コンペ仕様が埋まってから、baseline や提出コードの作成を依頼します。
 
-## 迷ったらここ
+## Kaggle 認証（Kaggle のみ）
+
+Kaggle CLIを使う場合は、次のどちらかで認証します。公式CLIが推奨するOAuthではtokenを手元で管理する必要がありません。
+
+```bash
+uv run kaggle auth login
+```
+
+Claude Code skillや非対話実行でtokenが必要な場合は、Kaggleの設定画面で発行し、`.env.example`からローカル専用の`.env`を作ります。
+
+```bash
+cp .env.example .env
+```
+
+```dotenv
+KAGGLE_API_TOKEN=kgat_your_actual_token_here
+```
+
+`.env`は自動でGit管理から除外されます。token方式でKaggle CLIを実行するときは、明示的に読み込みます。
+
+```bash
+uv run --env-file .env kaggle competitions list
+```
+
+tokenを画面、ログ、commitに含めないでください。認証方式の詳細は[Kaggle CLI公式ドキュメント](https://github.com/Kaggle/kaggle-cli/blob/main/docs/README.md#authentication)を参照してください。
+
+## 基本ワークフロー
+
+用語に慣れていない場合は、次の意味だけ押さえておけば始められます。
+
+- **fold**: 学習データを学習用と検証用に分ける単位
+- **CV**: 手元のデータでモデル性能を測る検証
+- **LB**: コンペ側のテストデータで計算されるLeaderboardスコア
+- **OOF**: 各行を学習に使っていないモデルから得た予測
 
 ### コンペ開始時にやること
 
 1. `CLAUDE.md` を Claude Code に読ませる
 2. `competition/overview.md` を埋める
 3. `data/README.md` を見て、公式データの置き場所を決める
-4. `scripts/check_gpu.py` で GPU 利用可否を確認する
+4. GPUを使う場合は `scripts/check_gpu.py` で利用可否を確認する
 5. Kaggle コンペなら Kaggle CLI で API 接続と参加済み状態を確認する
 6. metric、submission、validation、rules が埋まってから baseline を作る
 
@@ -103,11 +116,27 @@ Kaggle CLI の接続確認例:
 uv run kaggle competitions files <competition-slug>
 ```
 
+`competition-slug`はコンペURL末尾の文字列です。たとえば`https://www.kaggle.com/competitions/titanic`では`titanic`です。
+
 データを取得する場合:
 
 ```bash
 uv run kaggle competitions download -c <competition-slug> -p data/raw
 ```
+
+上の例はOAuth認証の場合です。`.env`のtokenを使う場合は、`uv run`の直後に`--env-file .env`を加えます。Kaggle以外のコンペでは、この手順は不要です。
+
+### GPU を使う場合
+
+GPUが必要なモデルを使う場合だけ確認します。
+
+```bash
+uv run python scripts/check_gpu.py
+```
+
+テンプレート本体にはPyTorchなどの重いGPU依存を含めていません。GPUが見えているのにライブラリから使えない場合は、利用するモデルに合ったGPU対応ライブラリを追加します。
+
+Kaggle Notebookでは、acceleratorに加えてinternet、external data、pretrained modelのルールも確認してください。
 
 ### 良い外部情報を見つけたとき
 
@@ -192,7 +221,9 @@ uv run python scripts/plot_cv_lb.py \
   --output docs/figures/cv_lb_correlation.png
 ```
 
-CV が改善しても LB が悪化する場合は、モデル追加より先に fold、metric 実装、リーク、public LB 過適合を疑います。
+3件の提出結果がそろうと相関診断を開始し、5件を超えると直近5件の相関も図に表示します。警告閾値は `--warn-below`、直近件数は `--recent-window` で変更できます。
+
+CV が改善しても LB が悪化する場合は、モデル追加や提出を増やす前に fold、metric 実装、リーク、train/test の分布差、public LB 過適合を疑います。少数の相関係数だけで結論を出さず、`docs/validation_checklist.md` に沿って診断します。
 
 ### コンペ理解をまとめたいとき
 
@@ -265,7 +296,10 @@ MCP は任意拡張です。最初から必須にしません。
 ## Kaggle 向け任意拡張
 
 このテンプレートは Kaggle 以外のデータ分析コンペでも使えるように、特定サービスの plugin や skill を必須にしません。
-Kaggle コンペで、overview、rules、public notebook、discussion、writeup、kernel submission などの調査や操作を効率化したい場合は、NVIDIA の `nvidia-kaggle` plugin を任意で追加できます。
+Kaggle コンペで、overview、rules、public notebook、discussion、writeup、kernel submission などの調査や操作を効率化したい場合は、NVIDIA の [`nvidia-kaggle`](https://github.com/NVIDIA/nvidia-kaggle) plugin を任意で追加できます。
+
+<details>
+<summary>NVIDIA nvidia-kaggle のセットアップを見る</summary>
 
 ### Claude Code で使う方法
 
@@ -314,25 +348,11 @@ NVIDIA の `skills/nvidia-kaggle-skill/` ディレクトリを使う場合は、
 
 project-local skill はリポジトリをcloneした人にも共有できます。一方で、第三者のskillには実行スクリプトが含まれることがあるため、追加・更新時は内容を読んでから使います。
 
-### Kaggle API token
+### Skill から認証情報を使う場合
 
-Kaggle API を使う workflow では `KAGGLE_API_TOKEN` が必要です。実トークンは `.env` や shell の環境変数に置き、Git には入れません。
+project-local skillでtokenを使う場合も、上で作成した`.env`を利用します。Claude Codeにはtokenを表示しないよう明示します。
 
-このリポジトリには `.env.example` だけを commit しています。ローカルでは次のように作ります。
-
-```bash
-cp .env.example .env
-```
-
-その後、`.env` の値を自分の Kaggle token に置き換えます。
-
-```dotenv
-KAGGLE_API_TOKEN=kgat_your_actual_token_here
-```
-
-`.env` は `.gitignore` で除外されています。`git status --short` に `.env` が出てこないことを確認してください。
-
-Claude Code に依頼する場合:
+依頼例:
 
 ```text
 NVIDIA nvidia-kaggle skill を使って Kaggle の competition overview を取得してください。
@@ -347,6 +367,8 @@ KAGGLE_API_TOKEN は .env から読み込んでください。トークン値は
 - kernel や notebook を再現する場合は `workspace/expNNN_name/` か `references/raw/` に整理する
 - 提出した場合は `submit/SUBMISSIONS.md` と `submit/submissions.csv` に記録する
 - competition submission、dataset upload、public dataset 作成は、必ずユーザー承認後に行う
+
+</details>
 
 ## Git 運用
 
@@ -422,8 +444,13 @@ workspace/folds/
 
 ```bash
 uv run python --version
+# GPUを使う場合
 uv run python scripts/check_gpu.py
 uv run pytest
 uv run ruff check .
 uv run ruff format --check .
 ```
+
+## License
+
+[MIT License](LICENSE)
