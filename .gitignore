@@ -34,6 +34,9 @@ data/raw/
 data/interim/
 data/processed/
 data/external/
+data/*.db*
+data/notebooks/
+data/kernel_research/
 references/raw/
 workspace/**/results/
 workspace/**/models/
@@ -45,6 +48,7 @@ submit/**/*.csv
 !submit/submissions.csv
 submit/**/*.zip
 submit/**/*.ipynb
+.claude/skills/nvidia-kaggle-skill/data/
 
 # System files
 .DS_Store

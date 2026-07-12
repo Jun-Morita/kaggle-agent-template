@@ -7,7 +7,10 @@ data/
 ├─ raw/        # 公式データをそのまま置く
 ├─ interim/    # 一時変換
 ├─ processed/  # 学習に使う加工済みデータ
-└─ external/   # ルール上使える外部データ
+├─ external/   # ルール上使える外部データ
+├─ notebooks/  # Kaggle skill の notebook cache
+└─ *.db        # Kaggle skill の metadata cache
 ```
 
 コンペごとの正確なダウンロード元、配置先、ライセンスは `competition/overview.md` に書く。
+データ、notebook cache、SQLite cache は Git に入れない。

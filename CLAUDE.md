@@ -36,7 +36,7 @@
 
 - Python 実行、lint、notebook 起動は `uv run` 経由を基本にする。
 - `uv sync` 後は `src/kaggle_agent_template/` が editable install される。手動の `PYTHONPATH` 追加に依存しない。
-- Kaggle のデータ取得、discussion / kernels / submissions の確認、提出は Kaggle CLI または Kaggle 用 skill を使う。ブラウザ操作やスクレイピングに寄せない。
+- Kaggleでは`.claude/skills/nvidia-kaggle-skill/`を使う。必要に応じてKaggle CLIも使う。
 - 環境構築後は `uv run python scripts/check_gpu.py` で GPU 利用可否を確認する。
 - GPU が使える場合は、コンペのタスクに合う GPU 対応ライブラリを優先して検討する。
 - PyTorch などの重い GPU 依存は、コンペで必要になってから追加する。
@@ -46,6 +46,7 @@
 ## 進め方
 
 1. `competition/overview.md` にコンペ情報を整理する。
+   Kaggleの場合は、先に`KAGGLE_API_TOKEN`と`.env`を確認し、同梱skillで公式情報を取得する。
 2. notebook、discussion、外部記事から使う知識を `references/knowledge/` に要約し、`INDEX.md` を更新する。
 3. `workspace/expNNN_name/` に実験ディレクトリを作る。
 4. 最小 baseline で提出ファイルを作り、提出形式が通るかを先に確認する。
@@ -101,12 +102,13 @@ MCP は最初から必須にしない。データ理解や notebook 生成を繰
 
 MCP の分析結果は、返された artifact を必ず読んでから考察する。コード生成だけで判断しない。
 
-## Kaggle skill は任意拡張
+## Kaggle skill
 
-Kaggle コンペで `nvidia-kaggle` plugin / `nvidia-kaggle-skill` が使える場合は、overview、rules、public notebook、discussion、writeup、kernel reproduction、kernel submission、dataset upload の調査や操作に使ってよい。
-ただし、Kaggle 以外のコンペでは必須にしない。
+Kaggleコンペでは、同梱の`.claude/skills/nvidia-kaggle-skill/`をoverview、rules、public notebook、discussion、writeup、kernel reproduction、kernel submission、dataset uploadの調査や操作に使う。Kaggle以外のコンペでは使わない。
 
-project-local skill は `.claude/skills/` に置く。skill を使う前に、対象 skill の `SKILL.md` と参照先 workflow markdown を読む。
+Kaggle APIを使う前に、`KAGGLE_API_TOKEN`と`.env`の準備をユーザーへ案内する。未準備なら`.env.example`のコピーとKaggle設定画面でのtoken発行を案内し、準備されるまでAPIを呼ばない。tokenの値は読めても表示しない。
+
+skillを使う前に`SKILL.md`と、依頼に対応するworkflow markdownだけを読む。
 第三者 skill に含まれる `scripts/` は外部コードとして扱い、実行前に何をするか確認する。
 
 使う場合も、このリポジトリの運用ルールを優先する。

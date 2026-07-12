@@ -5,13 +5,19 @@ description = "Simple Kaggle template for Claude Code assisted experiments"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [
+  "httpx",
   "ipykernel",
   "jupyterlab",
   "kaggle",
+  "kagglesdk",
   "matplotlib",
+  "nbformat",
   "numpy",
   "pandas",
+  "pydantic",
+  "python-dotenv",
   "pyyaml",
+  "rich",
   "scikit-learn",
   "seaborn",
 ]
@@ -34,6 +40,7 @@ packages = ["src/kaggle_agent_template"]
 line-length = 100
 target-version = "py312"
 exclude = [
+  ".claude/skills",
   ".venv",
   "data",
   "references/raw",
