@@ -10,7 +10,7 @@ Claude Code で Kaggle などのデータ分析コンペを進めるための、
 1. コンペ仕様を先に整理する
 2. 外部知識は出典付きで要約する
 3. 実験は `workspace/` に分けて残す
-4. 結果と判断は日報と提出履歴に書く
+4. 実験結果と提出履歴の保存先を固定する
 
 対象は、Claude Code を使って Kaggle または同様のデータ分析コンペを進めたい人です。モデルやデータは同梱せず、コンペごとの作業を整理・再現するための土台だけを提供します。
 
@@ -28,15 +28,47 @@ Claude Code で Kaggle などのデータ分析コンペを進めるための、
 
 事前に Git、[uv](https://docs.astral.sh/uv/getting-started/installation/)、[Claude Code](https://docs.anthropic.com/en/docs/claude-code/getting-started) をインストールします。Kaggleで使う場合は、アカウント作成とコンペへの参加も必要です。
 
+### 新しいリポジトリとして始める
+
+GitHubで **Use this template** が表示される場合は、そこからコンペ用リポジトリを作成できます。コマンドで始める場合は、コンペ名を指定してcloneします。
+
 ```bash
-git clone https://github.com/Jun-Morita/kaggle-agent-template.git
-cd kaggle-agent-template
+git clone https://github.com/Jun-Morita/kaggle-agent-template.git <competition-name>
+cd <competition-name>
 
 uv sync
 uv run pre-commit install
 uv run pytest
 claude
 ```
+
+cloneした場合、`git remote set-url origin <your-repository-url>`で`origin`を自分のコンペ用リポジトリへ変更してください。
+
+### 既存のコンペ用リポジトリへ導入する
+
+既存リポジトリをcommitしてから、テンプレートをその外側へcloneします。
+
+```bash
+cd /path/to/<existing-competition-repo>
+
+git clone --depth 1 \
+  https://github.com/Jun-Morita/kaggle-agent-template.git \
+  ../kaggle-agent-template-source
+
+claude --add-dir ../kaggle-agent-template-source
+```
+
+Claude Codeには次のように依頼します。
+
+```text
+../kaggle-agent-template-source を参考に、このリポジトリへテンプレートを導入してください。
+テンプレート側の .git はコピーせず、既存の README.md、LICENSE、データ、notebook、ソースコードは上書きしないでください。
+CLAUDE.md、pyproject.toml、.gitignore、pre-commit設定は既存内容とマージしてください。
+必要なディレクトリ、scripts、tests、.claude/skills を追加し、uv sync とテストまで実行してください。
+編集前に、競合するファイルと導入方針を簡潔に示してください。
+```
+
+`--add-dir`は、リポジトリ外のテンプレートをClaude Codeから参照可能にするオプションです。導入後は`git status --short`で変更対象を確認し、Claude Codeを再起動してproject-local skillを読み込ませます。既存の依存関係や運用ルールがある場合は、テンプレートより既存リポジトリを優先して統合します。
 
 `uv sync` が仮想環境と依存関係を準備します。以後のPythonコマンドは、仮想環境を手動でactivateせず `uv run ...` で実行できます。
 
