@@ -84,9 +84,15 @@ def validate_submission(
         details = ", ".join(f"{column}={count}" for column, count in missing.items())
         errors.append(f"missing values found: {details}")
 
-    if prediction_columns and (require_numeric or min_value is not None or max_value is not None):
+    if prediction_columns:
         predictions = submission[prediction_columns]
         numeric_predictions = predictions.apply(pd.to_numeric, errors="coerce")
+        non_finite = numeric_predictions.isin([float("inf"), float("-inf")])
+        if non_finite.any().any():
+            invalid_columns = list(non_finite.any()[non_finite.any()].index)
+            errors.append(f"non-finite prediction values found: {invalid_columns}")
+
+    if prediction_columns and (require_numeric or min_value is not None or max_value is not None):
         invalid_numeric = numeric_predictions.isna() & predictions.notna()
         if invalid_numeric.any().any():
             invalid_columns = list(invalid_numeric.any()[invalid_numeric.any()].index)

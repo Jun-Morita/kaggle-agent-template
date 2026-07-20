@@ -44,14 +44,7 @@
 - First submission version:
 - Source experiment:
 - Model:
-- CV:
-- Public LB:
 - Submission check result:
-
-## Experiments
-
-| Experiment | Hypothesis | CV | Public LB | Decision | Notes |
-|---|---|---:|---:|---|---|
 
 ## CV / LB Tracking
 
@@ -77,3 +70,5 @@
 ## References
 
 -
+
+実験詳細とCVは各`SESSION_NOTES.md`、提出スコアは`submit/submissions.csv`を参照する。

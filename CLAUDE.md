@@ -28,7 +28,7 @@
 
 - metric を実装・変更したら `src/kaggle_agent_template/metrics.py` と `tests/` を更新し、`uv run pytest` を実行する。
 - 提出CSVを作ったら `scripts/validate_submission.py` で `sample_submission.csv` と突き合わせる。
-- 提出したら `submit/SUBMISSIONS.md` に人間向けの要約を書き、`submit/submissions.csv` に機械可読ログを残す。
+- 提出したらCV、LB、提出ファイルhashを `submit/submissions.csv` に記録し、重要な判断だけ `submit/SUBMISSIONS.md` に要約する。
 - Public LB を記録したら `scripts/plot_cv_lb.py` で CV / LB plot と直近傾向を更新する。
 - 実験実行時は seed を適用し、`results/run_metadata.json` に git SHA、config hash、主要ライブラリversionを残す。
 
@@ -51,10 +51,10 @@
 3. `workspace/expNNN_name/` に実験ディレクトリを作る。
 4. 最小 baseline で提出ファイルを作り、提出形式が通るかを先に確認する。
 5. 信頼できる CV を作り、その後に特徴量やモデルを改善する。
-6. 実験ごとに `SESSION_NOTES.md` へ仮説、変更、結果、出典を書く。
-7. コンペ理解は `docs/competition_report.md` に日本語で集約する。
-8. その日の判断と次アクションを `daily_reports/YYYYMMDD.md` に集約する。
-9. 提出したら `submit/SUBMISSIONS.md` に CV / LB / 出典を残す。
+6. 実験ごとの仮説、変更、結果、出典は `SESSION_NOTES.md` だけに記録する。
+7. コンペ理解は `docs/competition_report.md` に日本語で集約し、実験表は重複させない。
+8. その日の判断と次アクションだけを `daily_reports/YYYYMMDD.md` に残す。
+9. 提出値は `submit/submissions.csv` を正本とし、重要な採否理由だけ `submit/SUBMISSIONS.md` に残す。
 
 ## 外部知識の扱い
 
@@ -64,7 +64,7 @@
 - 重要な知識を追加したら `references/knowledge/INDEX.md` も更新する。
 - 内容をそのまま長く貼らない。要約し、出典を明記する。
 - notebook や discussion 由来のアイデアを実験に使う場合は、`SESSION_NOTES.md` に出典を書く。
-- 提出に効いた外部知識は `submit/SUBMISSIONS.md` にも出典を残す。
+- 提出判断に重要な外部知識は `submit/SUBMISSIONS.md` にも出典を残す。
 - rules の external data、pretrained models、internet が不明な場合は、外部データや外部モデルを使うコードを書かない。
 
 ## 実験ルール
@@ -86,7 +86,7 @@
 - metric 実装は、小さい手計算ケースや公開 baseline と照合してから実験に使う。
 - CV と LB がずれたら、モデルより先に fold、metric、分布差、リークを疑う。
 - CV / LB が3件そろったら相関を診断し、以後は Public LB 更新ごとに plot を更新する。直近5件の相関が弱ければ追加提出より先に validation を監査する。少数点の相関だけで自動採否しない。
-- 実験詳細は `SESSION_NOTES.md` に残す。`submit/SUBMISSIONS.md` は提出結果と判断の要約だけにする。
+- 実験詳細は `SESSION_NOTES.md`、CV/LBと提出物情報は `submit/submissions.csv` を正本にする。`submit/SUBMISSIONS.md` は重要な判断の要約だけにする。
 - データ、モデル、提出物などの大容量ファイルは Git に入れない。
 - 中間モデルと OOF は Git 管理外に置き、anchor、提出再現、比較に不要な成果物は定期的に削除する。
 
@@ -123,10 +123,10 @@ skillを使う前に`SKILL.md`と、依頼に対応するworkflow markdownだけ
 
 ## 提出前チェック
 
-- 行数、列名、ID 順序、欠損、値域を確認する。
+- 行数、列名、ID 順序、欠損、有限値、値域を確認する。
 - `uv run python scripts/validate_submission.py --sample data/raw/sample_submission.csv --submission submit/vNNN_expNNN_name/submission.csv` を実行する。
 - 提出元の実験、fold、モデル、CV、推論設定を記録する。
-- `uv run python scripts/record_submission.py ...` で `submit/submissions.csv` に追記する。
+- `uv run python scripts/record_submission.py ...` で `submit/submissions.csv` をversion単位で登録・更新する。
 - Public LB が分かったら `uv run python scripts/plot_cv_lb.py` を実行し、CV / LB の関係を確認する。
 - CSV 提出は `templates/submit_csv/`、Kaggle kernel 提出は `templates/submit_kernel/` を必要に応じてコピーして使う。
 - Kaggle への実提出はユーザー承認後に行う。
@@ -135,8 +135,8 @@ skillを使う前に`SKILL.md`と、依頼に対応するworkflow markdownだけ
 
 - `docs/competition_report.md` は人間向けの日本語要約として更新する。
 - EDA の細かい出力や実験ログをすべて貼らず、重要な発見、判断、次の実験候補に絞る。
-- データ仕様、metric、validation、CV / LB の関係、試したアプローチを最新化する。
-- 実験の詳細は `workspace/expNNN_name/SESSION_NOTES.md` に残し、日ごとの判断は `daily_reports/YYYYMMDD.md` に残す。
+- データ仕様、metric、validation、CV / LB の関係、試したアプローチの要約を最新化する。
+- 実験の詳細と数値は `workspace/expNNN_name/SESSION_NOTES.md`、提出値は `submit/submissions.csv` に残す。日報には判断と次アクションだけを書く。
 
 ## Claude Code の振る舞い
 

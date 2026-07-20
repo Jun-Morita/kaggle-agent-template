@@ -19,5 +19,5 @@ submit/v001_exp001_baseline/
 - [ ] ローカルまたは Kaggle 上で最後まで実行した
 - [ ] `scripts/validate_submission.py` を通した
 - [ ] 外部知識、外部データ、public notebook を使った場合は出典を記録した
-- [ ] `submit/SUBMISSIONS.md` に記録した
-- [ ] `submit/submissions.csv` に記録した
+- [ ] `submit/submissions.csv` に提出値と提出物情報を記録した
+- [ ] 重要な判断がある場合は `submit/SUBMISSIONS.md` に要約した

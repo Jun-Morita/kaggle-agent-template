@@ -5,27 +5,14 @@
 - Name:
 - Deadline:
 - Metric:
-- Current best CV:
-- Current best LB:
 
 ## Today
 
 - 
 
-## Experiments
-
-| Experiment | Hypothesis | CV | LB | Status | Notes |
-|---|---|---:|---:|---|---|
-
 ## Findings
 
 - 
-
-## CV / LB
-
-- Plot:
-- Correlation / gap:
-- Validation concern:
 
 ## Knowledge / References
 
@@ -38,3 +25,5 @@
 ## Next
 
 - [ ] 
+
+実験詳細とCVは各`SESSION_NOTES.md`、提出スコアは`submit/submissions.csv`を参照する。

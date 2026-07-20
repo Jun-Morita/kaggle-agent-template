@@ -39,3 +39,15 @@ def test_validate_submission_allows_string_predictions_by_default(tmp_path) -> N
     errors = validate_submission(submission_path, sample_path, id_columns=["id"])
 
     assert errors == []
+
+
+def test_validate_submission_rejects_non_finite_predictions(tmp_path) -> None:
+    sample_path = tmp_path / "sample_submission.csv"
+    submission_path = tmp_path / "submission.csv"
+
+    pd.DataFrame({"id": [1, 2], "target": [0.0, 0.0]}).to_csv(sample_path, index=False)
+    pd.DataFrame({"id": [1, 2], "target": [float("inf"), 0.8]}).to_csv(submission_path, index=False)
+
+    errors = validate_submission(submission_path, sample_path, id_columns=["id"])
+
+    assert "non-finite prediction values found: ['target']" in errors
