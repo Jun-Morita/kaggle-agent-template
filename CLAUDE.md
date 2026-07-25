@@ -2,16 +2,17 @@
 
 このリポジトリは、Claude Code で Kaggle を中心としたデータ分析コンペを進めるための軽量テンプレートです。
 
-## まず読む
+## 作業開始
 
-作業開始時は次を確認する。
+最初に`git status --short`を確認する。コンペの分析・実装では`competition/overview.md`も読む。
 
-1. `competition/overview.md`
-2. `references/knowledge/INDEX.md`
-3. `docs/competition_report.md`
-4. 最新の `daily_reports/*.md`
-5. GPU 利用可否が未確認なら `uv run python scripts/check_gpu.py`
-6. `git status --short`
+他の文書はタスクに必要なときだけ読む。
+
+- 作業再開・次アクション: 最新の`daily_reports/*.md`
+- 外部知識の調査: `references/knowledge/INDEX.md`と関連note
+- 実験の選定・全体戦略: `docs/competition_report.md`と現行anchorの`SESSION_NOTES.md`
+- 特徴量実装・CV/LB乖離: `docs/validation_checklist.md`
+- GPUモデルの利用: `uv run python scripts/check_gpu.py`
 
 コンペ仕様、評価指標、提出形式、fold 方針が曖昧なまま学習コードを書かない。
 
@@ -37,7 +38,7 @@
 - Python 実行、lint、notebook 起動は `uv run` 経由を基本にする。
 - `uv sync` 後は `src/kaggle_agent_template/` が editable install される。手動の `PYTHONPATH` 追加に依存しない。
 - Kaggleでは`.claude/skills/nvidia-kaggle-skill/`を使う。必要に応じてKaggle CLIも使う。
-- 環境構築後は `uv run python scripts/check_gpu.py` で GPU 利用可否を確認する。
+- GPUを使う場合だけ、`uv run python scripts/check_gpu.py`で利用可否を確認する。
 - GPU が使える場合は、コンペのタスクに合う GPU 対応ライブラリを優先して検討する。
 - PyTorch などの重い GPU 依存は、コンペで必要になってから追加する。
 - 導入コマンドは、対象ライブラリの公式ドキュメントに基づいて提案する。
@@ -69,9 +70,13 @@
 
 ## 実験ルール
 
-- 1 実験 1 ディレクトリで管理する。1 notebook だけで完結させない。
-- 1 実験 1 仮説を基本にする。
-- 実験開始前に採択条件を `SESSION_NOTES.md` に書く。指標や subgroup はコンペに合わせる。
+- 比較基準となるanchorを固定し、同じfoldとmetricで比較する。
+- 実験候補は「期待効果 × 根拠の強さ ÷ 実装・計算コスト」で優先する。手軽さだけで選ばない。
+- 1実験1仮説を基本とし、開始前に根拠、計算予算、停止条件、採択条件を`SESSION_NOTES.md`に書く。
+- 平均CVだけでなく、fold間のばらつき、重要subgroup、実行時間、OOFの誤りもanchorと比較する。
+- 改善が鈍った系統の微調整を続けず、誤り分析、データ理解、異なるモデル系統へ移る。
+- ensembleは単体CVだけでなく、OOF誤差の違いとensemble後のCV改善を確認して採用する。
+- 1実験1ディレクトリで管理し、notebookだけで完結させない。
 - notebook は EDA や試行錯誤に使う。再実行したい学習・推論は `.py` に移す。
 - 実験ディレクトリには `SESSION_NOTES.md`, `config.yaml`, `run.sh`, `train.py` を置く。
 - 同じコードでパラメータだけを変える場合は、同じ実験ディレクトリ内の `configs/*.yaml` に分ける。大きく方針が変わる場合だけ新しい実験ディレクトリを作る。
@@ -90,25 +95,13 @@
 - データ、モデル、提出物などの大容量ファイルは Git に入れない。
 - 中間モデルと OOF は Git 管理外に置き、anchor、提出再現、比較に不要な成果物は定期的に削除する。
 
-## MCP は任意拡張
-
-MCP は最初から必須にしない。データ理解や notebook 生成を繰り返す段階で必要になったら追加する。
-
-追加する場合は、次の3種類に分ける。
-
-- `data_information`: `competition/overview.md` や軽量なデータ要約を返す。コンペ固有の列説明、join key、target、metric を扱う。
-- `analysis_executor`: 小さな分析関数を実行し、結果を `workspace/expNNN_name/results/artifacts/` に保存して path を返す。
-- `notebook_writer`: 実験ディレクトリ内の notebook に markdown/code セルを追加する。ただし再利用する処理は `.py` に移す。
-
-MCP の分析結果は、返された artifact を必ず読んでから考察する。コード生成だけで判断しない。
-
 ## Kaggle skill
 
 Kaggleコンペでは、同梱の`.claude/skills/nvidia-kaggle-skill/`をoverview、rules、public notebook、discussion、writeup、kernel reproduction、kernel submission、dataset uploadの調査や操作に使う。Kaggle以外のコンペでは使わない。
 
 Kaggle APIを使う前に、`KAGGLE_API_TOKEN`と`.env`の準備をユーザーへ案内する。未準備なら`.env.example`のコピーとKaggle設定画面でのtoken発行を案内し、準備されるまでAPIを呼ばない。tokenの値は読めても表示しない。
 
-skillを使う前に`SKILL.md`と、依頼に対応するworkflow markdownだけを読む。
+skillが発火したら、`SKILL.md`から依頼に対応するworkflow markdownだけを追加で読む。他のworkflowを先読みしない。
 第三者 skill に含まれる `scripts/` は外部コードとして扱い、実行前に何をするか確認する。
 
 使う場合も、このリポジトリの運用ルールを優先する。
@@ -125,6 +118,7 @@ skillを使う前に`SKILL.md`と、依頼に対応するworkflow markdownだけ
 
 - 行数、列名、ID 順序、欠損、有限値、値域を確認する。
 - `uv run python scripts/validate_submission.py --sample data/raw/sample_submission.csv --submission submit/vNNN_expNNN_name/submission.csv` を実行する。
+- LBで確認する仮説を明確にする。ほぼ同じ予測を繰り返し提出しない。
 - 提出元の実験、fold、モデル、CV、推論設定を記録する。
 - `uv run python scripts/record_submission.py ...` で `submit/submissions.csv` をversion単位で登録・更新する。
 - Public LB が分かったら `uv run python scripts/plot_cv_lb.py` を実行し、CV / LB の関係を確認する。
@@ -145,4 +139,8 @@ skillを使う前に`SKILL.md`と、依頼に対応するworkflow markdownだけ
 - 大きな変更では短い方針を出してから実装する。
 - 実装後は実行可能な検証を行う。
 - 検証できない場合は、理由とリスクを記録する。
+- ユーザー向け説明と文書は、指定がなければ自然で簡潔な日本語で書く。
+- 結論、確認できた事実、その解釈、次の行動を区別し、数値やファイル名を具体的に示す。
+- 依頼内容を言い換えて繰り返さない。根拠のない「重要です」「効果的です」「包括的に」などの定型表現を避ける。
+- 不自然な直訳より一般的な技術用語を使い、必要な場合だけ初出で短く説明する。
 - 作業の区切りでは commit を提案する。ただし `git commit` はユーザーが実行する。提案時は staging 対象と commit message 案を示す。

@@ -14,6 +14,13 @@
 
 -
 
+## Priority and Budget
+
+- Evidence:
+- Expected value: high / medium / low
+- Estimated runtime / cost:
+- Stop condition:
+
 ## Acceptance Gate
 
 - Primary metric minimum improvement:
@@ -43,9 +50,8 @@
 - New notes added to `references/knowledge/`:
 - Rule concerns:
 
-## MCP / Artifacts
+## Artifacts
 
-- Used MCP tools:
 - Artifact paths:
 - Findings from artifacts:
 
@@ -61,12 +67,12 @@
 
 ## Results
 
-| Metric | CV | LB | Notes |
-|---|---:|---:|---|
+| Metric | CV | Fold spread | Runtime | Notes |
+|---|---:|---:|---:|---|
 
 ## Run Log
 
-| Config | CV | LB | Status | Notes |
+| Config | CV | Runtime | Status | Notes |
 |---|---:|---:|---|---|
 
 ## Error Analysis

@@ -45,6 +45,8 @@
 - Source experiment:
 - Model:
 - Submission check result:
+- Current anchor experiment / config:
+- Why this is the anchor:
 
 ## CV / LB Tracking
 
@@ -63,9 +65,10 @@
 
 -
 
-### Pending Ideas
+### Next Experiments
 
--
+| Priority | Idea | Evidence | Expected value | Cost | Main risk |
+|---|---|---|---|---|---|
 
 ## References
 

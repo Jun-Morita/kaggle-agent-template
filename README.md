@@ -184,7 +184,7 @@ Claude Code への依頼例:
 ### EDA や仮説検証をしたいとき
 
 1. `templates/experiment/` を `workspace/expNNN_name/` にコピーする
-2. `SESSION_NOTES.md` に仮説を書く
+2. `SESSION_NOTES.md` に仮説、根拠、期待効果、計算予算、停止条件を書く
 3. notebook は探索用に使う
 4. 再実行したい処理は `train.py` や別の `.py` に移す
 5. metric を実装・変更したら `tests/` に手計算ケースを追加する
@@ -199,7 +199,7 @@ Claude Code への依頼例:
 
 ```text
 templates/experiment をもとに workspace/exp001_baseline を作ってください。
-まずはデータ確認と最小baselineを行い、仮説、変更、結果を SESSION_NOTES.md に残してください。
+まずはデータ確認と最小baselineを行い、仮説、根拠、採択条件、結果を SESSION_NOTES.md に残してください。
 ```
 
 同じコードでパラメータだけを変える場合は、新しい実験ディレクトリを増やさず、同じディレクトリ内の `configs/*.yaml` に分けます。
@@ -284,6 +284,7 @@ Claude Code への依頼例:
 - 行数、列名、ID 順序、欠損、値域、重複
 - 推論に使った実験、fold、model、config
 - CV と LB
+- LBで確認する仮説。ほぼ同じ予測を繰り返し提出しない
 - 外部知識や外部データを使った場合の出典とルール適合
 
 CSV提出では、まず `sample_submission.csv` と突き合わせます。
@@ -319,11 +320,6 @@ Claude Code への依頼例:
 重要な採否判断がある場合だけ submit/SUBMISSIONS.md に要約してください。
 実アップロードはまだしないでください。
 ```
-
-## MCP
-
-MCP は任意拡張です。最初から必須にしません。
-必要になったら、データ情報を返す `data_information`、小さな分析を実行する `analysis_executor`、notebook にセルを追加する `notebook_writer` の3種類に分けて追加します。
 
 ## Kaggle skill
 
@@ -410,7 +406,7 @@ workspace/exp001_baseline/
 ├─ train.py
 ├─ notebook.ipynb      # 必要な場合だけ
 └─ results/            # git 管理外
-   └─ artifacts/       # MCP や EDA の出力
+   └─ artifacts/       # EDA や分析の出力
 ```
 
 ```text

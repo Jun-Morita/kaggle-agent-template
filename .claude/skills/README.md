@@ -21,3 +21,9 @@ Use this skill for Kaggle competitions. Claude Code discovers it from the projec
 Keep secrets in the root `.env`, never in this directory. Before updating, review the upstream diff and replace the whole skill directory so `SKILL.md`, workflow files, and `scripts/` stay in sync. Preserve the upstream license and update the revision above.
 
 Keep the upstream `SKILL.md`, workflow markdown files, and `scripts/` together.
+
+The skill uses progressive disclosure: `SKILL.md` selects a workflow, and only the linked workflow file should be read for that task. `tests/test_skill_contract.py` checks discovery metadata, linked files, and positive/negative eval coverage without calling Kaggle.
+
+The upstream `evals/evals.json` includes dataset-upload cases. Do not run write-action evals automatically or with live credentials; competition submissions and dataset uploads still require explicit user approval.
+
+Design reference: [Anthropic's Complete Guide to Building Skills for Claude](https://resources.anthropic.com/hubfs/The-Complete-Guide-to-Building-Skill-for-Claude.pdf?hsLang=en)
