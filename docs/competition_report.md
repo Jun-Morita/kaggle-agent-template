@@ -67,8 +67,8 @@
 
 ### Next Experiments
 
-| Priority | Idea | Evidence | Expected value | Cost | Main risk |
-|---|---|---|---|---|---|
+| Priority | Track | Idea | Evidence | Expected value | Cost | Main risk |
+|---|---|---|---|---|---|---|
 
 ## References
 

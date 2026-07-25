@@ -72,6 +72,7 @@
 
 - 比較基準となるanchorを固定し、同じfoldとmetricで比較する。
 - 実験候補は「期待効果 × 根拠の強さ ÷ 実装・計算コスト」で優先する。手軽さだけで選ばない。
+- baselineとCVの確立後、NVIDIA skillで公開情報を一度調べ、根拠付き候補を3〜5件に絞って`docs/competition_report.md`の`Next Experiments`へ`solid`または`exploratory`として記録する。再調査は停滞時か方針転換時だけ行う。
 - 1実験1仮説を基本とし、開始前に根拠、計算予算、停止条件、採択条件を`SESSION_NOTES.md`に書く。
 - 平均CVだけでなく、fold間のばらつき、重要subgroup、実行時間、OOFの誤りもanchorと比較する。
 - 改善が鈍った系統の微調整を続けず、誤り分析、データ理解、異なるモデル系統へ移る。
