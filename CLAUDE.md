@@ -112,6 +112,7 @@ skillが発火したら、`SKILL.md`から依頼に対応するworkflow markdown
 - notebook、discussion、writeup 由来の知識は `references/knowledge/` に出典付きで要約し、`INDEX.md` を更新する。
 - 再現した kernel や notebook は、実験に使うなら `workspace/expNNN_name/` に整理する。raw 取得物は `references/raw/` に置き、Git に入れない。
 - skill が生成した report、cache、download を読んでから判断する。生成物の存在だけで採用しない。
+- `data/submissions.jsonl`はkernel提出の操作履歴として参照し、CV、LB、提出物情報の正本は`submit/submissions.csv`とする。
 - `KAGGLE_API_TOKEN` は `.env` または環境変数から読む。secret として扱い、表示、ログ出力、commit をしない。
 - `.env.example` はサンプルとして管理するが、実トークン入りの `.env` は Git に入れない。
 - competition submission、dataset upload、public dataset 作成は外部に影響するため、必ずユーザー承認後に行う。

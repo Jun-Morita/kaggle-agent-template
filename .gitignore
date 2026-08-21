@@ -25,6 +25,8 @@ kaggle.json
 .claude/*
 !.claude/skills/
 !.claude/skills/**
+.claude/skills/**/__pycache__/
+.claude/skills/**/*.py[cod]
 
 # Kaggle data and outputs
 input/
@@ -35,6 +37,7 @@ data/interim/
 data/processed/
 data/external/
 data/*.db*
+data/submissions.jsonl
 data/notebooks/
 data/kernel_research/
 references/raw/

@@ -37,6 +37,14 @@ def test_linked_workflows_exist() -> None:
     assert all((SKILL_DIR / path).is_file() for path in linked_files)
 
 
+def test_submission_history_components_exist() -> None:
+    submission_workflow = (SKILL_DIR / "submission.md").read_text(encoding="utf-8")
+
+    assert (SKILL_DIR / "scripts/submission_history.py").is_file()
+    assert (SKILL_DIR / "scripts/submission_log.py").is_file()
+    assert "submission_history.py" in submission_workflow
+
+
 def test_evals_cover_triggering_and_non_triggering_queries() -> None:
     evals = json.loads((SKILL_DIR / "evals/evals.json").read_text(encoding="utf-8"))
     ids = [case["id"] for case in evals]

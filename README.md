@@ -342,6 +342,7 @@ KAGGLE_API_TOKEN は .env から読み込んでください。トークン値は
 - competition overview / rules / metric は `competition/overview.md` に反映する
 - notebook / discussion / writeup の要約は `references/knowledge/` に出典付きで残す
 - kernel や notebook を再現する場合は `workspace/expNNN_name/` か `references/raw/` に整理する
+- kernel提出の操作履歴は`data/submissions.jsonl`で確認し、CV、LB、提出物情報は`submit/submissions.csv`を正本とする
 - 提出値は `submit/submissions.csv` に記録し、重要な判断だけ `submit/SUBMISSIONS.md` に要約する
 - competition submission、dataset upload、public dataset 作成は、必ずユーザー承認後に行う
 
