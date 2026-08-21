@@ -191,6 +191,8 @@ Claude Code への依頼例:
 6. 図表、OOF、モデルなどの生成物は `results/` に置く
 7. 結果、判断、次アクションを `SESSION_NOTES.md` に残す
 
+OOFは`results/<config-name>/oof.parquet`にID、fold、正解値、予測値を保存します。多クラスや複数targetでは必要な予測列を増やします。test予測も同じ場所にID付きで保存すると、誤り分析やblendを学習なしで再実行できます。
+
 ```bash
 cp -r templates/experiment workspace/exp001_baseline
 ```
@@ -350,7 +352,7 @@ KAGGLE_API_TOKEN は .env から読み込んでください。トークン値は
 Claude Code は作業開始時に `git status --short` を見て状況を把握します。未コミットの差分が多いと、どこまでが完了済みで、どこからが作業中か判断しにくくなります。
 
 - 小さな区切りで commit する
-- commit message には実験番号や変更意図を書く
+- commit message は実験番号や変更意図を表す短い英文1行にする
 - 大きな生成物、データ、モデル、提出ファイルは commit しない
 - `uv.lock` が生成されたら commit する
 - Claude Code は commit を提案し、実行はユーザーが行う

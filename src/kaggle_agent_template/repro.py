@@ -59,6 +59,19 @@ def git_sha(cwd: Path | None = None) -> str:
     return result.stdout.strip()
 
 
+def git_is_dirty(cwd: Path | None = None) -> bool | None:
+    result = subprocess.run(
+        ["git", "status", "--porcelain"],
+        cwd=cwd,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return None
+    return bool(result.stdout.strip())
+
+
 def package_versions(packages: list[str] | None = None) -> dict[str, str]:
     packages = packages or ["numpy", "pandas", "scikit-learn"]
     versions: dict[str, str] = {}
@@ -76,18 +89,22 @@ def write_run_metadata(
     extra: dict[str, Any] | None = None,
 ) -> Path:
     output_dir.mkdir(parents=True, exist_ok=True)
+    run_timestamp = datetime.now(UTC)
+    config_hash = short_file_sha256(config_path) if config_path else ""
     metadata = {
-        "timestamp": datetime.now(UTC).isoformat(timespec="seconds"),
+        "timestamp": run_timestamp.isoformat(timespec="microseconds"),
         "python": sys.version.replace("\n", " "),
         "platform": platform.platform(),
         "git_sha": git_sha(),
+        "git_dirty": git_is_dirty(),
         "config_path": str(config_path) if config_path else "",
-        "config_hash": short_file_sha256(config_path) if config_path else "",
+        "config_hash": config_hash,
         "packages": package_versions(),
         "extra": extra or {},
     }
 
-    output_path = output_dir / "run_metadata.json"
+    run_id = run_timestamp.strftime("%Y%m%dT%H%M%S%fZ")
+    output_path = output_dir / f"run_metadata_{run_id}_{config_hash or 'no-config'}.json"
     with output_path.open("w", encoding="utf-8") as f:
         json.dump(metadata, f, indent=2, ensure_ascii=False)
         f.write("\n")

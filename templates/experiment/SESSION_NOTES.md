@@ -53,6 +53,8 @@
 ## Artifacts
 
 - Artifact paths:
+- OOF (`results/<config-name>/oof.parquet`; ID, fold, target, prediction):
+- Test predictions (ID and prediction columns):
 - Findings from artifacts:
 
 ## Run
@@ -63,7 +65,7 @@
 ./run.sh configs/variant.yaml
 ```
 
-- Run metadata:
+- Run metadata (`results/run_metadata_*.json`):
 
 ## Results
 

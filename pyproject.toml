@@ -8,7 +8,7 @@ dependencies = [
   "httpx",
   "ipykernel",
   "jupyterlab",
-  "kaggle",
+  "kaggle>=2.2.4",
   "kagglesdk",
   "matplotlib",
   "nbformat",

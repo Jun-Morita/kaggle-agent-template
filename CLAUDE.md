@@ -31,7 +31,7 @@
 - 提出CSVを作ったら `scripts/validate_submission.py` で `sample_submission.csv` と突き合わせる。
 - 提出したらCV、LB、提出ファイルhashを `submit/submissions.csv` に記録し、重要な判断だけ `submit/SUBMISSIONS.md` に要約する。
 - Public LB を記録したら `scripts/plot_cv_lb.py` で CV / LB plot と直近傾向を更新する。
-- 実験実行時は seed を適用し、`results/run_metadata.json` に git SHA、config hash、主要ライブラリversionを残す。
+- 実験実行時は seed を適用し、`results/run_metadata_*.json` に git SHA、dirty state、config hash、主要ライブラリversionを残す。
 
 ## 環境とGPU
 
@@ -83,7 +83,8 @@
 - 同じコードでパラメータだけを変える場合は、同じ実験ディレクトリ内の `configs/*.yaml` に分ける。大きく方針が変わる場合だけ新しい実験ディレクトリを作る。
 - seed、fold、metric、主要パラメータは config に置く。
 - seed は `kaggle_agent_template.repro.set_seed()` で適用する。
-- 実験時は `results/run_metadata.json` に git SHA と config hash を残す。
+- 実験時は `results/run_metadata_*.json` に git SHA、dirty state、config hash を残す。
+- OOFは`results/<config-name>/oof.parquet`にID、fold、正解値、予測値を保存し、test予測も同じ場所にID付きで保存する。
 - 初回は高性能モデルより先に、最小 baseline で submission が受理されることを確認する。
 - fold はデータ単位を確認してから決める。group や時系列がある場合はランダム KFold にしない。
 - fold を作ったら `workspace/folds/` に保存し、使った version を `SESSION_NOTES.md` と config に記録する。
@@ -144,4 +145,4 @@ skillが発火したら、`SKILL.md`から依頼に対応するworkflow markdown
 - 結論、確認できた事実、その解釈、次の行動を区別し、数値やファイル名を具体的に示す。
 - 依頼内容を言い換えて繰り返さない。根拠のない「重要です」「効果的です」「包括的に」などの定型表現を避ける。
 - 不自然な直訳より一般的な技術用語を使い、必要な場合だけ初出で短く説明する。
-- 作業の区切りでは commit を提案する。ただし `git commit` はユーザーが実行する。提案時は staging 対象と commit message 案を示す。
+- 作業の区切りでは commit を提案する。ただし `git commit` はユーザーが実行する。提案時は staging 対象と、変更内容を表す短い英文1行の commit message 案を示す。

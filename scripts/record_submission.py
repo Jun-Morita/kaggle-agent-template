@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import csv
 import hashlib
+import math
 import subprocess
 import tempfile
 from datetime import UTC, datetime
@@ -45,14 +46,24 @@ def git_sha() -> str:
     return result.stdout.strip()
 
 
+def finite_score(value: str) -> str:
+    try:
+        score = float(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("score must be numeric") from exc
+    if not math.isfinite(score):
+        raise argparse.ArgumentTypeError("score must be finite")
+    return value
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--version", required=True)
     parser.add_argument("--source-experiment", required=True)
     parser.add_argument("--fold-version", default="")
-    parser.add_argument("--cv", default="")
-    parser.add_argument("--public-lb", default="")
-    parser.add_argument("--private-lb", default="")
+    parser.add_argument("--cv", type=finite_score, default=None)
+    parser.add_argument("--public-lb", type=finite_score, default=None)
+    parser.add_argument("--private-lb", type=finite_score, default=None)
     parser.add_argument("--file", type=Path, default=None)
     parser.add_argument("--config", type=Path, default=None)
     parser.add_argument("--references", default="")
@@ -66,6 +77,16 @@ def read_rows(log_path: Path) -> list[dict[str, str]]:
         return []
     with log_path.open(encoding="utf-8", newline="") as f:
         return [{field: row.get(field, "") for field in FIELDS} for row in csv.DictReader(f)]
+
+
+def duplicate_file_versions(rows: list[dict[str, str]], file_hash: str, version: str) -> list[str]:
+    if not file_hash:
+        return []
+    return [
+        row["version"]
+        for row in rows
+        if row["version"] != version and row["file_hash"] == file_hash
+    ]
 
 
 def upsert_row(log_path: Path, row: dict[str, str]) -> str:
@@ -113,9 +134,9 @@ def main() -> None:
         "version": args.version,
         "source_experiment": args.source_experiment,
         "fold_version": args.fold_version,
-        "cv": args.cv,
-        "public_lb": args.public_lb,
-        "private_lb": args.private_lb,
+        "cv": args.cv or "",
+        "public_lb": args.public_lb or "",
+        "private_lb": args.private_lb or "",
         "file": str(args.file) if args.file else "",
         "file_hash": file_sha256(args.file) if args.file else "",
         "config_hash": file_sha256(args.config)[:12] if args.config else "",
@@ -123,6 +144,11 @@ def main() -> None:
         "references": args.references,
         "note": args.note,
     }
+
+    duplicates = duplicate_file_versions(read_rows(args.log), row["file_hash"], row["version"])
+    if duplicates:
+        versions = ", ".join(duplicates)
+        print(f"warning: identical submission file already recorded as: {versions}")
 
     action = upsert_row(args.log, row)
     print(f"{action} submission: {args.log}")

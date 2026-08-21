@@ -1,9 +1,20 @@
 from __future__ import annotations
 
+import argparse
 import csv
 import sys
 
-from scripts.record_submission import FIELDS, file_sha256, main, read_rows, upsert_row
+import pytest
+
+from scripts.record_submission import (
+    FIELDS,
+    duplicate_file_versions,
+    file_sha256,
+    finite_score,
+    main,
+    read_rows,
+    upsert_row,
+)
 
 
 def make_row(version: str, **updates: str) -> dict[str, str]:
@@ -39,6 +50,22 @@ def test_file_sha256_returns_full_digest(tmp_path) -> None:
     submission_path.write_text("id,target\n1,0.5\n", encoding="utf-8")
 
     assert len(file_sha256(submission_path)) == 64
+
+
+def test_duplicate_file_versions_excludes_current_version() -> None:
+    rows = [
+        make_row("v001", file_hash="same"),
+        make_row("v002", file_hash="same"),
+        make_row("v003", file_hash="different"),
+    ]
+
+    assert duplicate_file_versions(rows, "same", "v002") == ["v001"]
+
+
+@pytest.mark.parametrize("value", ["nan", "inf", "-inf", "not-a-score"])
+def test_finite_score_rejects_invalid_values(value) -> None:
+    with pytest.raises(argparse.ArgumentTypeError):
+        finite_score(value)
 
 
 def test_main_records_file_hash_and_updates_same_version(tmp_path, monkeypatch) -> None:
