@@ -8,6 +8,14 @@ import yaml
 
 SKILL_DIR = Path(".claude/skills/nvidia-kaggle-skill")
 SKILL_PATH = SKILL_DIR / "SKILL.md"
+ALLOWED_FRONTMATTER_KEYS = {
+    "name",
+    "description",
+    "license",
+    "allowed-tools",
+    "metadata",
+    "compatibility",
+}
 
 
 def read_skill() -> tuple[dict[str, object], str]:
@@ -16,16 +24,21 @@ def read_skill() -> tuple[dict[str, object], str]:
 
 
 def test_skill_discovery_metadata() -> None:
-    metadata, _ = read_skill()
+    metadata, body = read_skill()
     name = str(metadata["name"])
     description = str(metadata["description"])
     serialized_metadata = json.dumps(metadata)
 
+    assert set(metadata) <= ALLOWED_FRONTMATTER_KEYS
     assert name == SKILL_DIR.name
+    assert len(name) <= 64
     assert re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", name)
     assert len(description) <= 1024
     assert "Use " in description and "Not " in description
     assert "<" not in serialized_metadata and ">" not in serialized_metadata
+    compatibility = metadata.get("compatibility", "")
+    assert isinstance(compatibility, str) and len(compatibility) <= 500
+    assert len(body.splitlines()) <= 500
     assert not (SKILL_DIR / "README.md").exists()
 
 

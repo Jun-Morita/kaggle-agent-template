@@ -28,4 +28,4 @@ The skill uses progressive disclosure: `SKILL.md` selects a workflow, and only t
 
 The upstream `evals/evals.json` includes dataset-upload cases. Do not run write-action evals automatically or with live credentials; competition submissions and dataset uploads still require explicit user approval.
 
-Design reference: [Anthropic's Complete Guide to Building Skills for Claude](https://resources.anthropic.com/hubfs/The-Complete-Guide-to-Building-Skill-for-Claude.pdf?hsLang=en)
+Design references: [Anthropic's Complete Guide to Building Skills for Claude](https://resources.anthropic.com/hubfs/The-Complete-Guide-to-Building-Skill-for-Claude.pdf?hsLang=en) and [`anthropics/skills`](https://github.com/anthropics/skills/tree/0a64e398ec6bb34a494f0c347e8ccae53a862f8e/skills/skill-creator). Local tests enforce the documented frontmatter limits, compact `SKILL.md`, linked resources, and positive/negative eval coverage.
