@@ -3,6 +3,7 @@
 ## Metadata
 
 - Experiment:
+- Parent / anchor experiment and config:
 - Started:
 - Notebook:
 - Script:
@@ -12,13 +13,14 @@
 
 ## Hypothesis
 
--
+- Expected mechanism / why the current model misses it:
+- Leakage risk:
 
 ## Priority and Budget
 
 - Evidence:
 - Expected value: high / medium / low
-- Estimated runtime / cost:
+- Estimated runtime / cost / max trials:
 - Stop condition:
 
 ## Acceptance Gate
@@ -34,6 +36,7 @@
 - Metric implementation:
 - Metric sanity check:
 - Fold-safe feature checklist completed: yes / no
+- Audit evidence / CV impact / fix / verification (or no findings):
 
 ## Changes
 
@@ -53,7 +56,9 @@
 ## Artifacts
 
 - Artifact paths:
-- OOF (`results/<config-name>/oof.parquet`; ID, fold, target, prediction):
+- OOF (`results/<run-id>/oof.csv`; ID, fold, target, prediction):
+- Validation coverage / excluded rows and reason:
+- Prediction column meaning / class order:
 - Test predictions (ID and prediction columns):
 - Findings from artifacts:
 
@@ -65,17 +70,21 @@
 ./run.sh configs/variant.yaml
 ```
 
-- Run metadata (`results/run_metadata_*.json`):
+- Run metadata (`<output.dir>/run_metadata_*.json`):
 
 ## Results
 
-| Metric | CV | Fold spread | Runtime | Notes |
-|---|---:|---:|---:|---|
+| Run ID | Fold scores | CV mean ± std | Overall OOF score | Delta vs anchor |
+|---|---|---|---|---|
+
+同じfold・metric・集計方法で比較する。改善方向はmetricの定義に従う。
 
 ## Run Log
 
-| Config | CV | Runtime | Status | Notes |
-|---|---:|---:|---|---|
+| Run ID | Config / metadata | Runtime | Status | Artifacts / failure reason |
+|---|---|---|---|---|
+
+smoke / full CVを区別し、失敗・中断も残す。再実行では新しいrun IDを使う。
 
 ## Error Analysis
 
@@ -85,6 +94,6 @@
 
 ## Decision
 
-- Continue / stop:
+- Keep / reject / inconclusive:
 - Reason:
 - Next action:

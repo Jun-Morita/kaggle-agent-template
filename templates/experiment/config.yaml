@@ -22,4 +22,5 @@ model:
   params: {}
 
 output:
+  # Full CV: set a unique results/<run-id> directory for each run.
   dir: results

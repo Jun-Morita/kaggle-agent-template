@@ -54,5 +54,6 @@
 - External data:
 - Pretrained models:
 - Internet:
+- Runtime / accelerator / memory limits:
 - Last checked:
 - Notes:

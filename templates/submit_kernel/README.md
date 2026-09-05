@@ -21,3 +21,16 @@ submit/v001_exp001_baseline/
 - [ ] 外部知識、外部データ、public notebook を使った場合は出典を記録した
 - [ ] `submit/submissions.csv` に提出値と提出物情報を記録した
 - [ ] 重要な判断がある場合は `submit/SUBMISSIONS.md` に要約した
+
+## Reproduction
+
+- Code revision / config:
+- Environment / hardware / precision:
+- Input data / external sources / checkpoints:
+- Prediction columns / class order / postprocessing:
+- Reproduction command (from repository root):
+- Output path / SHA-256:
+
+再現コマンドを実行して提出物を再生成し、形式・保存済みtest予測との対応を確認する。
+コンペ固有の確率和・クラス順・実行時間も確認する（汎用CSV検証だけでは検出できない）。
+実提出・アップロードはユーザーの承認後に行う。

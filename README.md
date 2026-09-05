@@ -84,6 +84,9 @@ competition/overview.md に沿って workspace/exp001_baseline に最小baseline
 bash workspace/exp001_baseline/run.sh
 ```
 
+実験は小規模なsmoke testから固定foldのfull CVへ進め、失敗・中断も `SESSION_NOTES.md` に残します。
+完了したfull CVではID付きのOOF・test予測をrunごとに保存し、後から誤り分析やensembleに再利用します。
+
 同じコードのパラメータ違いは `configs/*.yaml`、方針が変わる実験は新しいディレクトリに分けます。
 モデル・図表・予測は実験内の `results/` に保存します。詳細は [workspace/README.md](workspace/README.md) を参照してください。
 
@@ -105,6 +108,7 @@ uv run python scripts/validate_submission.py \
 複合 ID は `--id-columns id1,id2`、数値予測は `--require-numeric`、値域は `--min-value` / `--max-value` で指定します。
 CSV 以外の提出形式は、コンペに合わせて検証を実装してください。
 
+提出用READMEに環境・入力・再現コマンドを記録し、提出物を再生成できることも確認します。
 実提出・データアップロードはユーザーの承認後に行います。提出後は次の例の CV / LB を実測値に置き換えて記録します。
 LB が未確定なら `--public-lb` を省略し、確定後に同じ version で更新します。
 
