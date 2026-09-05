@@ -1,197 +1,69 @@
 # kaggle-agent-template
 
-Claude Code で Kaggle などのデータ分析コンペを進めるための、シンプルな運用テンプレートです。
+Claude Code で Kaggle などのデータ分析コンペを進めるための、軽量テンプレートです。
+コンペ仕様、実験結果、提出履歴の置き場所を決め、何を試して何が良かったかを追えるようにします。
+学習済みモデルやコンペ固有の学習コードは含みません。
 
-素の Claude Code でもコードは書けます。ただしコンペでは、仕様、評価指標、fold、外部知識、実験結果、提出履歴が散らばると、あとで判断できなくなります。
-このテンプレートは、Claude Code が毎回読む場所と、結果を残す場所を固定することで、コンペ運用を破綻しにくくします。
+基本は **仕様を整理 → 実験 → 提出を検証 → 結果を記録** の4ステップです。
+Kaggle の調査用に NVIDIA の skill、実験用に config・seed・実行情報の記録、提出用に CSV 検証と CV / LB の可視化を用意しています。
 
-守ることは 4 つだけです。
+## はじめる
 
-1. コンペ仕様を先に整理する
-2. 外部知識は出典付きで要約する
-3. 実験は `workspace/` に分けて残す
-4. 実験結果と提出履歴の保存先を固定する
+Git、[uv](https://docs.astral.sh/uv/getting-started/installation/)、Claude Code を用意します。Python は 3.12 を使います。
 
-対象は、Claude Code を使って Kaggle または同様のデータ分析コンペを進めたい人です。モデルやデータは同梱せず、コンペごとの作業を整理・再現するための土台だけを提供します。
+### 1. リポジトリと環境を準備する
 
-## このテンプレートが役に立つこと
-
-- Claude Code が作業開始時に読むファイルを固定できる
-- metric、submission、validation が曖昧なまま実装しないようにできる
-- 1 実験 1 ディレクトリで、仮説、config、結果をまとめて残せる
-- public notebook や discussion の知識を、raw と要約に分けて管理できる
-- 提出形式、metric、提出ログをコードで確認できる
-- CV / LB / fold / 提出元を追えるので、良かった実験を再現しやすい
-- Git の差分が読みやすくなり、Claude Code が作業状態を誤解しにくい
-
-## Quick Start
-
-事前に Git、[uv](https://docs.astral.sh/uv/getting-started/installation/)、[Claude Code](https://docs.anthropic.com/en/docs/claude-code/getting-started) をインストールします。Kaggleで使う場合は、アカウント作成とコンペへの参加も必要です。
-
-### 新しいリポジトリとして始める
-
-GitHubで **Use this template** が表示される場合は、そこからコンペ用リポジトリを作成できます。コマンドで始める場合は、コンペ名を指定してcloneします。
+GitHub の **Use this template** でコンペ用リポジトリを作成して clone するか、次を実行します。
+`<competition-name>` は自分のコンペ名に置き換えてください。
 
 ```bash
 git clone https://github.com/Jun-Morita/kaggle-agent-template.git <competition-name>
 cd <competition-name>
-
 uv sync
-uv run pre-commit install
 uv run pytest
-claude
 ```
 
-cloneした場合、`git remote set-url origin <your-repository-url>`で`origin`を自分のコンペ用リポジトリへ変更してください。
+直接 clone した場合は、`git remote set-url origin <your-repository-url>` で保存先を自分のリポジトリへ変更します。
+`uv sync` が仮想環境と依存関係を準備するので、以後の Python コマンドは `uv run ...` で実行します。
 
-### 既存のコンペ用リポジトリへ導入する
+### 2. Kaggle 認証を設定する
 
-既存リポジトリをcommitしてから、テンプレートをその外側へcloneします。
-
-```bash
-cd /path/to/<existing-competition-repo>
-
-git clone --depth 1 \
-  https://github.com/Jun-Morita/kaggle-agent-template.git \
-  ../kaggle-agent-template-source
-
-claude --add-dir ../kaggle-agent-template-source
-```
-
-Claude Codeには次のように依頼します。
-
-```text
-../kaggle-agent-template-source を参考に、このリポジトリへテンプレートを導入してください。
-テンプレート側の .git はコピーせず、既存の README.md、LICENSE、データ、notebook、ソースコードは上書きしないでください。
-CLAUDE.md、pyproject.toml、.gitignore、pre-commit設定は既存内容とマージしてください。
-必要なディレクトリ、scripts、tests、.claude/skills を追加し、uv sync とテストまで実行してください。
-編集前に、競合するファイルと導入方針を簡潔に示してください。
-```
-
-`--add-dir`は、リポジトリ外のテンプレートをClaude Codeから参照可能にするオプションです。導入後は`git status --short`で変更対象を確認し、Claude Codeを再起動してproject-local skillを読み込ませます。既存の依存関係や運用ルールがある場合は、テンプレートより既存リポジトリを優先して統合します。
-
-`uv sync` が仮想環境と依存関係を準備します。以後のPythonコマンドは、仮想環境を手動でactivateせず `uv run ...` で実行できます。
-
-Python 3.12 が未導入の場合:
-
-```bash
-uv python install 3.12
-uv sync
-```
-
-## 最初に Claude Code に頼むこと
-
-Claude Code を開いたら、まず次のように依頼します。
-
-```text
-CLAUDE.md を読んで、このリポジトリの運用ルールに従ってください。
-参加するコンペのURLは <competition-url> です。
-まず competition/overview.md の未記入項目を確認し、不足情報を質問してください。
-```
-
-コンペ仕様が埋まってから、baseline や提出コードの作成を依頼します。
-
-## Kaggle 認証（Kaggle のみ）
-
-このテンプレートに同梱したKaggle skillは`KAGGLE_API_TOKEN`を使います。コンペ開始時に[KaggleのAPI設定](https://www.kaggle.com/settings/api)でtokenを発行し、`.env.example`からローカル専用の`.env`を作ります。
+Kaggle の[API設定](https://www.kaggle.com/settings/api)でトークンを発行します。
+初回だけ次を実行し、作成した `.env` の `KAGGLE_API_TOKEN` を実際の値に書き換えます。
 
 ```bash
 cp .env.example .env
-```
-
-```dotenv
-KAGGLE_API_TOKEN=kgat_your_actual_token_here
-```
-
-`.env`は自動でGit管理から除外されます。Kaggle CLIを直接実行するときは、明示的に読み込みます。
-
-```bash
 uv run --env-file .env kaggle competitions list
 ```
 
-tokenを画面、ログ、commitに含めないでください。`git status --short`に`.env`が表示されないことも確認します。認証方式の詳細は[Kaggle CLI公式ドキュメント](https://github.com/Kaggle/kaggle-cli/blob/main/docs/README.md#authentication)を参照してください。
+`.env` は Git 管理外です。トークンをログや commit に含めないでください。
+データ取得前に、Kaggle のコンペページで参加・ルールへの同意を済ませます。Kaggle 以外ではこの手順は不要です。
 
-## 基本ワークフロー
+### 3. Claude Code に最初の作業を頼む
 
-用語に慣れていない場合は、次の意味だけ押さえておけば始められます。
-
-- **fold**: 学習データを学習用と検証用に分ける単位
-- **CV**: 手元のデータでモデル性能を測る検証
-- **LB**: コンペ側のテストデータで計算されるLeaderboardスコア
-- **OOF**: 各行を学習に使っていないモデルから得た予測
-
-### コンペ開始時にやること
-
-1. `CLAUDE.md` を Claude Code に読ませる
-2. Kaggleなら`KAGGLE_API_TOKEN`を発行し、`.env`を準備する
-3. Kaggleなら同梱の`nvidia-kaggle-skill`で概要、rules、metric、提出形式を取得する
-4. `competition/overview.md`を埋める
-5. `data/README.md`を見て、公式データの置き場所を決める
-6. GPUを使う場合は`scripts/check_gpu.py`で利用可否を確認する
-7. metric、submission、validation、rulesが埋まってからbaselineを作る
-
-Claude Code への依頼例:
+リポジトリのルートで `claude` を起動し、次を渡します。
 
 ```text
-competition/overview.md を読んで、学習コードを書く前に不足している項目を整理してください。
-特に metric、submission、validation、rules を確認してください。
+CLAUDE.md に従って、このコンペの準備をしてください。
+コンペURL: <competition-url>
+公式情報を確認して competition/overview.md を埋めてください。
+Kaggle なら同梱の nvidia-kaggle-skill を使い、認証は .env から読み込んでください。
+評価指標、提出形式、validation、外部データ等のルールを整理し、
+取得できない情報だけ質問してください。
 ```
 
-Kaggle CLI の接続確認例:
+### 既存リポジトリに導入する場合
 
-```bash
-uv run --env-file .env kaggle competitions files <competition-slug>
-```
+既存の変更を commit してから、テンプレートを別ディレクトリへ clone し、Claude Code に統合を依頼します。
+既存のコード・データ・README・LICENSE を保持し、`CLAUDE.md`、`pyproject.toml`、`.gitignore` は既存設定とマージします。
+`.git` や `.venv` はコピーせず、導入後に `uv sync` とテストを実行してください。
 
-`competition-slug`はコンペURL末尾の文字列です。たとえば`https://www.kaggle.com/competitions/titanic`では`titanic`です。
+## 実験を進める
 
-データを取得する場合:
+まず [competition/overview.md](competition/overview.md) に評価指標・提出形式・fold 方針・ルールを整理します。
+**CV** は手元での検証スコア、**fold** は学習・検証の分割単位、**LB** はコンペ側のスコアです。
 
-```bash
-uv run --env-file .env kaggle competitions download -c <competition-slug> -p data/raw
-```
-
-Kaggle以外のコンペでは、tokenとskillの手順は不要です。
-
-### GPU を使う場合
-
-GPUが必要なモデルを使う場合だけ確認します。
-
-```bash
-uv run python scripts/check_gpu.py
-```
-
-テンプレート本体にはPyTorchなどの重いGPU依存を含めていません。GPUが見えているのにライブラリから使えない場合は、利用するモデルに合ったGPU対応ライブラリを追加します。
-
-Kaggle Notebookでは、acceleratorに加えてinternet、external data、pretrained modelのルールも確認してください。
-
-### 良い外部情報を見つけたとき
-
-1. raw の HTML、ipynb、スクリーンショットなどは `references/raw/` に保存する
-2. 使えそうな知識だけを `references/knowledge/` に md で要約する
-3. `references/knowledge/INDEX.md` を更新する
-4. URL、取得日、作者、要点、リスク、実験候補を書く
-5. 実験に使ったら `SESSION_NOTES.md` に出典を書く
-6. 提出に効いたら `submit/SUBMISSIONS.md` にも出典を書く
-
-Claude Code への依頼例:
-
-```text
-このnotebook/discussionの要点を references/knowledge/ に出典付きで要約してください。
-このコンペで使える実験候補と、leakage / rules 上のリスクも分けて書いてください。
-```
-
-### EDA や仮説検証をしたいとき
-
-1. `templates/experiment/` を `workspace/expNNN_name/` にコピーする
-2. `SESSION_NOTES.md` に仮説、根拠、期待効果、計算予算、停止条件を書く
-3. notebook は探索用に使う
-4. 再実行したい処理は `train.py` や別の `.py` に移す
-5. metric を実装・変更したら `tests/` に手計算ケースを追加する
-6. 図表、OOF、モデルなどの生成物は `results/` に置く
-7. 結果、判断、次アクションを `SESSION_NOTES.md` に残す
-
-OOFは`results/<config-name>/oof.parquet`にID、fold、正解値、予測値を保存します。多クラスや複数targetでは必要な予測列を増やします。test予測も同じ場所にID付きで保存すると、誤り分析やblendを学習なしで再実行できます。
+実験のひな形をコピーします。
 
 ```bash
 cp -r templates/experiment workspace/exp001_baseline
@@ -200,96 +72,28 @@ cp -r templates/experiment workspace/exp001_baseline
 Claude Code への依頼例:
 
 ```text
-templates/experiment をもとに workspace/exp001_baseline を作ってください。
-まずはデータ確認と最小baselineを行い、仮説、根拠、採択条件、結果を SESSION_NOTES.md に残してください。
+competition/overview.md に沿って workspace/exp001_baseline に最小baselineを実装してください。
+同じfoldで比較できるようにし、仮説、計算予算、採択条件、結果を SESSION_NOTES.md に残してください。
+まず提出ファイルを生成・検証できるところまで進めてください。
 ```
 
-同じコードでパラメータだけを変える場合は、新しい実験ディレクトリを増やさず、同じディレクトリ内の `configs/*.yaml` に分けます。
-方針が変わる場合だけ、新しい `workspace/expNNN_name/` を作ります。
-
-metric を追加・変更したら、必ずテストを通します。
+`train.py` は config の読み込み、seed の設定、実行情報の保存だけを行うひな形です。
+コンペに合わせて実装した後、ルートから次で実行できます。
 
 ```bash
-uv run pytest
+bash workspace/exp001_baseline/run.sh
 ```
 
-### 最初の提出経路を確認したいとき
+同じコードのパラメータ違いは `configs/*.yaml`、方針が変わる実験は新しいディレクトリに分けます。
+モデル・図表・予測は実験内の `results/` に保存します。詳細は [workspace/README.md](workspace/README.md) を参照してください。
 
-コンペ序盤では、強いモデルより先に「提出が通ること」を確認します。
+GPU が必要な場合だけ `uv run python scripts/check_gpu.py` で確認し、モデルに合ったライブラリを追加します。PyTorch などの GPU 依存は同梱していません。
 
-1. 最小 baseline で `submission.csv` を作る
-2. `scripts/validate_submission.py` で `sample_submission.csv` と突き合わせる
-3. `submit/v001_exp001_baseline/` に提出物と再現手順を整理する
-4. ユーザー承認後に Kaggle CLI で提出する
-5. Submission Error が出ないことを確認する
-6. スコアと提出物情報を `submit/submissions.csv` に記録し、重要な判断だけ `submit/SUBMISSIONS.md` に残す
+## 提出を検証・記録する
 
-Kaggle CLI の提出例:
+提出用のひな形は [CSV提出](templates/submit_csv/README.md) と [Kaggle kernel提出](templates/submit_kernel/README.md) から選び、`submit/v001_exp001_baseline/` にコピーします。
 
-```bash
-uv run --env-file .env kaggle competitions submit \
-  -c <competition-slug> \
-  -f submit/v001_exp001_baseline/submission.csv \
-  -m "v001 baseline smoke submission"
-```
-
-Claude Code への依頼例:
-
-```text
-最小baselineで提出CSVを作り、scripts/validate_submission.py を通してください。
-Kaggle CLIでの実提出コマンドを提示してください。ただし、実提出はまだ実行しないでください。
-```
-
-### CV と LB の関係を見たいとき
-
-提出ログに CV と Public LB を記録したら、散布図を更新します。
-
-```bash
-uv run python scripts/plot_cv_lb.py \
-  --log submit/submissions.csv \
-  --output docs/figures/cv_lb_correlation.png
-```
-
-3件の提出結果がそろうと相関診断を開始し、5件を超えると直近5件の相関も図に表示します。警告閾値は `--warn-below`、直近件数は `--recent-window` で変更できます。
-
-CV が改善しても LB が悪化する場合は、モデル追加や提出を増やす前に fold、metric 実装、リーク、train/test の分布差、public LB 過適合を疑います。少数の相関係数だけで結論を出さず、`docs/validation_checklist.md` に沿って診断します。
-
-### コンペ理解をまとめたいとき
-
-`docs/competition_report.md` に、コンペ概要、データ仕様、EDA、validation、baseline、試したアプローチを日本語で集約します。
-細かい実験ログは `workspace/expNNN_name/SESSION_NOTES.md` に残し、`docs/competition_report.md` は人間が全体像を読み返すための要約にします。
-
-### その日の取り組みをまとめたいとき
-
-1. `templates/daily_report.md` を `daily_reports/YYYYMMDD.md` にコピーする
-2. 今日分かったこと、判断、未解決事項を書く
-3. 外部情報から得た知識があれば `Knowledge / References` に書く
-4. 明日やることを `Next` にチェックリストで残す
-5. その日の区切りで commit 対象と commit message を Claude Code に提案させる
-
-実験値は `SESSION_NOTES.md`、提出スコアは `submit/submissions.csv` を参照し、日報には重複して転記しません。
-
-Claude Code への依頼例:
-
-```text
-今日の作業を daily_reports/YYYYMMDD.md にまとめてください。
-今日の発見、採用した判断、未解決事項、明日のNext Actionを簡潔に整理してください。
-最後に git status --short を見て、commit対象とcommit message案を出してください。
-```
-
-## 提出
-
-提出形式が決まったら、必要に応じて `templates/submit_csv/` または `templates/submit_kernel/` を `submit/vNNN_expNNN_name/` にコピーします。
-
-提出前に必ず確認します。
-
-- 行数、列名、ID 順序、欠損、値域、重複
-- 推論に使った実験、fold、model、config
-- CV と LB
-- LBで確認する仮説。ほぼ同じ予測を繰り返し提出しない
-- 外部知識や外部データを使った場合の出典とルール適合
-
-CSV提出では、まず `sample_submission.csv` と突き合わせます。
+CSV を作成したら、公式の sample submission と比較します。
 
 ```bash
 uv run python scripts/validate_submission.py \
@@ -297,9 +101,12 @@ uv run python scripts/validate_submission.py \
   --submission submit/v001_exp001_baseline/submission.csv
 ```
 
-この検証は予測列の `NaN` と `inf` を拒否します。数値予測では `--require-numeric` を追加し、必要なら `--min-value` と `--max-value` で値域も指定します。
+行数、列名、ID の重複・順序、欠損、予測の無限値を検証します。既定では先頭列を ID とみなします。
+複合 ID は `--id-columns id1,id2`、数値予測は `--require-numeric`、値域は `--min-value` / `--max-value` で指定します。
+CSV 以外の提出形式は、コンペに合わせて検証を実装してください。
 
-提出したら、CV、LB、提出CSVのSHA-256は `submit/submissions.csv` に記録します。同じversionを再度記録すると既存行が更新されるため、Public LB確定後も同じコマンドで更新できます。`submit/SUBMISSIONS.md` には重要な提出の採否理由だけを残します。
+実提出・データアップロードはユーザーの承認後に行います。提出後は次の例の CV / LB を実測値に置き換えて記録します。
+LB が未確定なら `--public-lb` を省略し、確定後に同じ version で更新します。
 
 ```bash
 uv run python scripts/record_submission.py \
@@ -309,127 +116,53 @@ uv run python scripts/record_submission.py \
   --cv 0.1234 \
   --public-lb 0.1200 \
   --file submit/v001_exp001_baseline/submission.csv \
-  --config workspace/exp001_baseline/config.yaml \
-  --note "baseline"
+  --config workspace/exp001_baseline/config.yaml
+
+uv run python scripts/plot_cv_lb.py
 ```
 
-Kaggle への実アップロードは Claude Code が勝手に行わず、ユーザー承認後に行います。
+提出値とファイルの SHA-256 は `submit/submissions.csv`、図は `docs/figures/cv_lb_correlation.png` に保存されます。
+CV と LB がずれたら、[validation checklist](docs/validation_checklist.md) で fold・metric・リーク・分布差を確認します。
 
-Claude Code への依頼例:
+## 何をどこに残すか
 
-```text
-提出前チェックを行い、提出値を submit/submissions.csv に記録してください。
-重要な採否判断がある場合だけ submit/SUBMISSIONS.md に要約してください。
-実アップロードはまだしないでください。
-```
+数値や実験ログを複数の文書へ転記せず、詳細は元の記録を参照します。
 
-## Kaggle skill
+| 保存先 | 内容 |
+|---|---|
+| [CLAUDE.md](CLAUDE.md) | エージェントの作業ルール |
+| [competition/overview.md](competition/overview.md) | コンペ仕様・評価指標・ルール |
+| [data/](data/README.md) | 公式データ・加工データ（データ本体は Git 管理外） |
+| [workspace/](workspace/README.md) | 実験コード・config・`SESSION_NOTES.md`、固定した fold |
+| [references/knowledge/](references/knowledge/README.md) | notebook・discussion 等の出典付き要約 |
+| [submit/submissions.csv](submit/submissions.csv) | CV・LB・提出物の記録 |
+| [submit/SUBMISSIONS.md](submit/SUBMISSIONS.md) | 重要な提出の採否理由 |
+| [docs/competition_report.md](docs/competition_report.md) | コンペ理解・発見・次の実験候補 |
+| [daily_reports/](daily_reports/README.md) | その日の判断・未解決事項・次アクション |
 
-NVIDIAの[`nvidia-kaggle-skill`](https://github.com/NVIDIA/nvidia-kaggle)を`.claude/skills/nvidia-kaggle-skill/`に同梱しています。追加インストールは不要で、このリポジトリをcloneしたClaude Codeからproject-local skillとして利用できます。
+生の取得物は `references/raw/`、実験の生成物は `results/` に置き、Git に入れません。
 
-Kaggleコンペでは、overview、rules、public notebook、discussion、writeup、kernel reproductionなどの調査と操作に使います。Kaggle以外のコンペでは使いません。第三者のskillには実行スクリプトが含まれるため、実行前に対象workflowとコマンドを確認します。
+## 同梱の Kaggle skill
 
-依頼例:
+NVIDIA の [nvidia-kaggle-skill](https://github.com/NVIDIA/nvidia-kaggle) を `.claude/skills/` に同梱しています。
+Claude Code から追加インストールなしで、概要・ルールの取得、公開 notebook・discussion・writeup の調査、kernel の再現・提出、dataset のアップロードに使えます。
+Kaggle 以外のコンペには使いません。
 
-```text
-NVIDIA nvidia-kaggle skill を使って Kaggle の competition overview を取得してください。
-KAGGLE_API_TOKEN は .env から読み込んでください。トークン値は表示しないでください。
-取得結果は competition/overview.md に要約して反映してください。
-```
+調査結果は `competition/overview.md` や `references/knowledge/` に要約します。
+kernel 提出の操作履歴 `data/submissions.jsonl` と、CV / LB をまとめる `submit/submissions.csv` は役割が異なります。
+同梱版の revision と更新手順は [skill の管理情報](.claude/skills/README.md) を参照してください。
 
-使う場合も、このリポジトリの記録ルールを優先します。
-
-- competition overview / rules / metric は `competition/overview.md` に反映する
-- notebook / discussion / writeup の要約は `references/knowledge/` に出典付きで残す
-- kernel や notebook を再現する場合は `workspace/expNNN_name/` か `references/raw/` に整理する
-- kernel提出の操作履歴は`data/submissions.jsonl`で確認し、CV、LB、提出物情報は`submit/submissions.csv`を正本とする
-- 提出値は `submit/submissions.csv` に記録し、重要な判断だけ `submit/SUBMISSIONS.md` に要約する
-- competition submission、dataset upload、public dataset 作成は、必ずユーザー承認後に行う
-
-同梱版の出典、revision、更新方針は`.claude/skills/README.md`を参照してください。skill本体はNVIDIAのMIT Licenseに従います。
-
-## Git 運用
-
-Claude Code は作業開始時に `git status --short` を見て状況を把握します。未コミットの差分が多いと、どこまでが完了済みで、どこからが作業中か判断しにくくなります。
-
-- 小さな区切りで commit する
-- commit message は実験番号や変更意図を表す短い英文1行にする
-- 大きな生成物、データ、モデル、提出ファイルは commit しない
-- `uv.lock` が生成されたら commit する
-- Claude Code は commit を提案し、実行はユーザーが行う
-
-例:
+## 開発時の確認
 
 ```bash
-git add CLAUDE.md README.md
-git commit -m "docs: clarify experiment workflow for Claude Code"
-
-git add workspace/exp001_baseline
-git commit -m "exp001: add baseline training script"
-
-git add submit/submissions.csv submit/SUBMISSIONS.md submit/v001_exp001_baseline
-git commit -m "submit: record v001 baseline submission"
-```
-
-## 構成
-
-```text
-kaggle-agent-template/
-├─ .claude/skills/nvidia-kaggle-skill/
-├─ CLAUDE.md
-├─ competition/overview.md
-├─ data/
-├─ daily_reports/
-├─ docs/
-├─ references/
-├─ scripts/
-├─ src/
-├─ tests/
-├─ workspace/
-├─ submit/SUBMISSIONS.md
-└─ templates/
-```
-
-```text
-references/
-├─ knowledge/
-│  ├─ INDEX.md
-│  ├─ notebooks.md
-│  ├─ discussions.md
-│  └─ external_ideas.md
-└─ raw/                 # git 管理外
-```
-
-```text
-workspace/exp001_baseline/
-├─ SESSION_NOTES.md
-├─ config.yaml
-├─ configs/            # パラメータ違いを置く場合だけ
-├─ run.sh
-├─ train.py
-├─ notebook.ipynb      # 必要な場合だけ
-└─ results/            # git 管理外
-   └─ artifacts/       # EDA や分析の出力
-```
-
-```text
-workspace/folds/
-└─ v001/
-   ├─ folds.csv
-   └─ README.md
-```
-
-## Check
-
-```bash
-uv run python --version
-# GPUを使う場合
-uv run python scripts/check_gpu.py
 uv run pytest
 uv run ruff check .
 uv run ruff format --check .
 ```
 
+commit 時にも lint・format を実行したい場合は、`uv run pre-commit install` で有効にします。
+コード・設定・要約・`uv.lock` を Git に残し、データ・モデル・実トークンは含めません。
+
 ## License
 
-[MIT License](LICENSE)
+[MIT](LICENSE)。同梱 skill は [NVIDIA の MIT License](.claude/skills/nvidia-kaggle-skill/LICENSE) に従います。

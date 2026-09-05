@@ -13,6 +13,7 @@ This repository includes NVIDIA's project-local Kaggle skill:
 
 - Upstream: https://github.com/NVIDIA/nvidia-kaggle
 - Vendored revision: `2b78cf29f5f30680764292a6592de8d53d4147a8`
+- Upstream checked: 2026-09-05; `main` matches the vendored revision (no update needed).
 - License: MIT; see `nvidia-kaggle-skill/LICENSE`
 - Local compatibility changes: removed unsupported `permissions` frontmatter and use the root `uv` environment
 
