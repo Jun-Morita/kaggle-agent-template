@@ -28,6 +28,7 @@
 ## 実行可能なガード
 
 - metric を実装・変更したら `src/kaggle_agent_template/metrics.py` と `tests/` を更新し、`uv run pytest` を実行する。
+- フォールバックを持つコードは、成果物のロード・意図した経路の実行・代替処理の発生件数を検査する。通常のsmokeでは予期しないフォールバックを0件とし、既知の入力と期待出力（必要なら根拠のある性能下限）で生存確認する。意図したフォールバックは別ケースで動作を確認する。
 - 提出CSVを作ったら `scripts/validate_submission.py` で `sample_submission.csv` と突き合わせる。
 - 提出したらCV、LB、提出ファイルhashを `submit/submissions.csv` に記録し、重要な判断だけ `submit/SUBMISSIONS.md` に要約する。
 - Public LB を記録したら `scripts/plot_cv_lb.py` で CV / LB plot と直近傾向を更新する。
@@ -76,6 +77,7 @@
 - 1実験1仮説を基本とし、開始前に根拠、計算予算、停止条件、採択条件を`SESSION_NOTES.md`に書く。
 - 小規模smoke testで入出力とfold内fitを確認してからfull CVを実行する。特徴量はfamily単位のablationで効果を切り分け、HPOはtrial数・時間上限を決めて粗い探索から絞る。
 - fold別score、平均・標準偏差、overall OOF score、実行時間を記録し、重要subgroupとOOFの誤りもanchorと比較する。集計方法の異なるscoreを混同しない。
+- 大枠の変更（アプローチ・モデル系統・問題設定・データ）を棄却する前に、現行案に有利な評価条件、自作評価を通らない証拠と出典、食い違いと棄却理由を記録する。証拠不足は保留とし、予算による見送りと性能上の棄却を区別して再検討条件を残す。記録先は`SESSION_NOTES.md`、実験前の案は`docs/competition_report.md`の候補欄とする。
 - 改善が鈍った系統の微調整を続けず、誤り分析、データ理解、異なるモデル系統へ移る。
 - ensembleはOOFのID・fold・予測列の対応を監査し、best singleと単純平均に対する改善・安定性・推論コストで採否を決める。重み調整やstackerの学習に使った行で性能を評価しない。詳細は`docs/validation_checklist.md`。
 - 1実験1ディレクトリで管理し、notebookだけで完結させない。
@@ -93,8 +95,8 @@
 - 前処理の fit は train fold のみで行う。baselineのfull CV後は実装と切り離した監査を行い、コードの根拠・CVへの影響・修正案を`SESSION_NOTES.md`へ残す。
 - target、集約、ランキング、encoding を使う特徴量は `docs/validation_checklist.md` で fold-safe か確認する。
 - metric 実装は、小さい手計算ケースや公開 baseline と照合してから実験に使う。
-- CV と LB がずれたら、モデルより先に fold、metric、分布差、リークを疑う。
-- CV / LB が3件そろったら相関を診断し、以後は Public LB 更新ごとに plot を更新する。直近5件の相関が弱ければ追加提出より先に validation を監査する。少数点の相関だけで自動採否しない。
+- ローカル評価と本番がずれたら、fold・metric・リークに加え、評価対象の偏り・自作評価器の仮定・時間変化を調べる。順位や相関が安定していても水準のずれを見逃さない。
+- CV / LB が3件そろったら相関を診断し、以後は Public LB 更新ごとに plot を更新する。直近5件の相関が弱ければ追加提出より先に validation を監査する。少数点の相関だけで自動採否しない。水準のずれや外部証拠との矛盾があれば件数を待たずに監査する。
 - 実験詳細は `SESSION_NOTES.md`、CV/LBと提出物情報は `submit/submissions.csv` を正本にする。`submit/SUBMISSIONS.md` は重要な判断の要約だけにする。
 - データ、モデル、提出物などの大容量ファイルは Git に入れない。
 - 中間モデルと OOF は Git 管理外に置き、anchor、提出再現、比較に不要な成果物は定期的に削除する。

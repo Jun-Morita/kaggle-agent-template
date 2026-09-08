@@ -35,6 +35,7 @@
 - Fold reason:
 - Metric implementation:
 - Metric sanity check:
+- Evaluation source / date / version / selection bias:
 - Fold-safe feature checklist completed: yes / no
 - Audit evidence / CV impact / fix / verification (or no findings):
 
@@ -71,6 +72,7 @@
 ```
 
 - Run metadata (`<output.dir>/run_metadata_*.json`):
+- Smoke: loaded artifact / executed path / fallback count / expected output:
 
 ## Results
 
@@ -96,4 +98,6 @@ smoke / full CVを区別し、失敗・中断も残す。再実行では新し�
 
 - Keep / reject / inconclusive:
 - Reason:
+- For major rejection: incumbent advantage / independent evidence and source / contradictions:
+- If deferred: budget or missing evidence / revisit condition:
 - Next action:
