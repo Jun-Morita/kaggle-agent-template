@@ -38,6 +38,7 @@
 - Metric implementation:
 - CV sanity checks:
 - CV / LB correlation:
+- First production comparison: date / source / subgroup differences / uncertainty / proxy limits
 
 ## Baseline
 

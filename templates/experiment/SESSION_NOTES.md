@@ -21,6 +21,7 @@
 - Evidence:
 - Expected value: high / medium / low
 - Estimated runtime / cost / max trials:
+- Bottleneck: measured GPU / CPU / I/O or implementation estimate and evidence:
 - Stop condition:
 
 ## Acceptance Gate
@@ -28,6 +29,7 @@
 - Primary metric minimum improvement:
 - Stability constraint (fold / time / group, if needed):
 - Fixed before run: yes / no
+- Selection vs confirmation data / seeds (unused for selection):
 
 ## Validation Setup
 

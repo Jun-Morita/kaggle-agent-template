@@ -48,6 +48,17 @@
 - ID order:
 - Value range:
 - Local validation:
+- Final selection: 選択期限 / 提出枠数 / 評価・頑健性・多様性の基準
+
+## Format Mapping（CSV / fold の前提が合わない場合のみ）
+
+該当しない既存欄は理由付きで N/A とし、コンペ固有の読み替えをここへ集約する。
+
+- 提出形式: CSV / Notebook / エージェント / その他（Submission の Type と対応）
+- 「CV」に当たるローカル評価と固定する比較条件:
+- 「Public LB」に当たる本番の信号と性質（ばらつき・収束・最終評価方法）:
+- 使わないテンプレート機能と代替手順（metrics.py、CSV検証、fold / OOF保存等）:
+- 追加の提出前検査:
 
 ## Rules
 

@@ -4,7 +4,7 @@
 
 ## 作業開始
 
-最初に`git status --short`を確認する。コンペの分析・実装では`competition/overview.md`も読む。
+最初に`git status --short`を確認する。コンペの分析・実装では`competition/overview.md`も読む。CSV / foldの前提が合わない場合は同ファイルの`Format Mapping`に従い、以下の必須欄・コマンド・成果物を読み替える。コンペ固有の例外は本書に追記しない。
 
 他の文書はタスクに必要なときだけ読む。
 
@@ -71,13 +71,14 @@
 
 ## 実験ルール
 
-- 比較基準となるanchorを固定し、同じfoldとmetricで比較する。変更時は理由と新versionを記録し、anchorも再評価する。Public LBを特徴量・HPO・blend重みの主要な選択基準にしない。
+- 比較基準となるanchorを固定し、候補と同じfold・metricで直接比較して事前の採択条件を満たした場合に置き換える。変更時は理由と新versionを記録し、anchorも再評価する。Public LBを特徴量・HPO・blend重みの主要な選択基準にしない。
+- 自作評価器は本番の最初の信号が得られた時点で、比較可能なsubgroup・相手・時期ごとにローカル値と実測を照合し、ずれの量・不確実性・適用範囲を`docs/competition_report.md`へ記録する。照合前や本番情報が不足する間は探索用とし、その評価だけで大枠を確定しない。
 - 実験候補は「期待効果 × 根拠の強さ ÷ 実装・計算コスト」で優先する。手軽さだけで選ばない。
 - baselineとCVの確立後、NVIDIA skillで現コンペと類似コンペの上位解法を調べ、転用条件とルール適合を確認し、根拠付き候補を3〜5件に絞って`docs/competition_report.md`の`Next Experiments`へ`solid`または`exploratory`として記録する。再調査は停滞時か方針転換時だけ行う。
 - 1実験1仮説を基本とし、開始前に根拠、計算予算、停止条件、採択条件を`SESSION_NOTES.md`に書く。
 - 小規模smoke testで入出力とfold内fitを確認してからfull CVを実行する。特徴量はfamily単位のablationで効果を切り分け、HPOはtrial数・時間上限を決めて粗い探索から絞る。
 - fold別score、平均・標準偏差、overall OOF score、実行時間を記録し、重要subgroupとOOFの誤りもanchorと比較する。集計方法の異なるscoreを混同しない。
-- 大枠の変更（アプローチ・モデル系統・問題設定・データ）を棄却する前に、現行案に有利な評価条件、自作評価を通らない証拠と出典、食い違いと棄却理由を記録する。証拠不足は保留とし、予算による見送りと性能上の棄却を区別して再検討条件を残す。記録先は`SESSION_NOTES.md`、実験前の案は`docs/competition_report.md`の候補欄とする。
+- 大枠の変更（アプローチ・モデル系統・問題設定・データ）を棄却する前に、現行案に有利な評価条件、自作評価を通らない証拠と出典、食い違いと棄却理由を記録する。証拠不足は保留とし、予算による見送りと性能上の棄却を区別する。予算不足はGPU・CPU・I/Oの計測値や実装工数の見積根拠から律速を特定し、未計測なら推測と明記して再検討条件を残す。記録先は`SESSION_NOTES.md`、実験前の案は`docs/competition_report.md`の候補欄とする。
 - 改善が鈍った系統の微調整を続けず、誤り分析、データ理解、異なるモデル系統へ移る。
 - ensembleはOOFのID・fold・予測列の対応を監査し、best singleと単純平均に対する改善・安定性・推論コストで採否を決める。重み調整やstackerの学習に使った行で性能を評価しない。詳細は`docs/validation_checklist.md`。
 - 1実験1ディレクトリで管理し、notebookだけで完結させない。
@@ -122,6 +123,8 @@ skillが発火したら、`SKILL.md`から依頼に対応するworkflow markdown
 - competition submission、dataset upload、public dataset 作成は外部に影響するため、必ずユーザー承認後に行う。
 
 ## 提出前チェック
+
+- 最終提出の選択期限と基準を、再検証時間を残して`competition/overview.md`に先に記録する。Public LBだけで選ばずローカル評価と頑健性を確認し、複数枠では弱点や誤りの異なる候補の組合せを検討する。多様性だけを理由に未検証・劣化した候補を選ばない。
 
 - 行数、列名、ID 順序、欠損、有限値、値域を確認する。
 - `uv run python scripts/validate_submission.py --sample data/raw/sample_submission.csv --submission submit/vNNN_expNNN_name/submission.csv` を実行する。
