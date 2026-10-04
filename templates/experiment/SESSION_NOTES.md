@@ -1,105 +1,49 @@
 # Experiment Notes
 
-## Metadata
+仮説・実行結果・判断をここに集約する。該当しない欄は省略可。詳細な検査は`docs/validation_checklist.md`を参照し、指摘と確認結果だけ残す。
 
-- Experiment:
+## Plan（実行前）
+
+- Experiment / started:
 - Parent / anchor experiment and config:
-- Started:
-- Notebook:
-- Script:
-- Config:
-- Fold version:
-- Metric version:
+- Hypothesis / mechanism / evidence and sources:
+- Change / leakage or rule risk:
+- Budget (runtime / cost / max trials) / stop condition:
+- Acceptance criterion / stability constraint:
+- Selection vs confirmation data / seeds:
 
-## Hypothesis
+## Validation
 
-- Expected mechanism / why the current model misses it:
-- Leakage risk:
+- Fold file and version / reason (or evaluation conditions):
+- Metric implementation / version / sanity check:
+- Evaluation source / date / selection bias:
+- Audit findings / impact / fix / verification:
 
-## Priority and Budget
+## Run Log
 
-- Evidence:
-- Expected value: high / medium / low
-- Estimated runtime / cost / max trials:
-- Bottleneck: measured GPU / CPU / I/O or implementation estimate and evidence:
-- Stop condition:
+smoke / full評価、完了・失敗・中断を区別する。run IDは一意にし、既存の成果物を上書きしない。config・metadata・成果物は参照先を記載する。
 
-## Acceptance Gate
+| Run ID | Config / metadata | Runtime | Status | Artifacts / failure reason |
+|---|---|---|---|---|
 
-- Primary metric minimum improvement:
-- Stability constraint (fold / time / group, if needed):
-- Fixed before run: yes / no
-- Selection vs confirmation data / seeds (unused for selection):
-
-## Validation Setup
-
-- Fold file:
-- Fold reason:
-- Metric implementation:
-- Metric sanity check:
-- Evaluation source / date / version / selection bias:
-- Fold-safe feature checklist completed: yes / no
-- Audit evidence / CV impact / fix / verification (or no findings):
-
-## Changes
-
--
-
-## Notebook Notes
-
-- EDA / quick checks:
-- Reusable code moved to `.py`: yes / no
-
-## Knowledge Sources
-
-- Used references:
-- New notes added to `references/knowledge/`:
-- Rule concerns:
-
-## Artifacts
-
-- Artifact paths:
-- OOF (`results/<run-id>/oof.csv`; ID, fold, target, prediction):
-- Validation coverage / excluded rows and reason:
-- Prediction column meaning / class order:
-- Test predictions (ID and prediction columns):
-- Findings from artifacts:
-
-## Run
-
-```bash
-./run.sh
-# or
-./run.sh configs/variant.yaml
-```
-
-- Run metadata (`<output.dir>/run_metadata_*.json`):
+- Reproduction command:
 - Smoke: loaded artifact / executed path / fallback count / expected output:
+- Predictions: OOF / test paths, ID / fold / target / prediction columns:
+- Coverage / excluded rows / class order / scale / postprocessing:
 
 ## Results
 
 | Run ID | Fold scores | CV mean ± std | Overall OOF score | Delta vs anchor |
 |---|---|---|---|---|
 
-同じfold・metric・集計方法で比較する。改善方向はmetricの定義に従う。
+同じ条件・metric・集計方法で比較する。CVを使わない課題では表の列をローカル評価に合わせる。
 
-## Run Log
-
-| Run ID | Config / metadata | Runtime | Status | Artifacts / failure reason |
-|---|---|---|---|---|
-
-smoke / full CVを区別し、失敗・中断も残す。再実行では新しいrun IDを使う。
-
-## Error Analysis
-
-- Checked samples:
-- Error patterns:
-- Next fix:
+- Error patterns / important subgroup / supporting artifacts:
+- Learned / conditions where this may transfer:
 
 ## Decision
 
-- Keep / reject / inconclusive:
-- Reason:
-- For major rejection: incumbent advantage / independent evidence and source / contradictions:
-- If deferred: budget or missing evidence / revisit condition:
+- Keep / reject / inconclusive and reason:
+- Major rejection only: incumbent advantage / independent evidence and source / contradictions:
+- Deferred only: missing evidence or measured bottleneck (GPU / CPU / I/O / effort estimate) / revisit condition:
 - Next action:

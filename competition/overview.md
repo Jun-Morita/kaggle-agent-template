@@ -27,6 +27,7 @@
 - Official definition:
 - Local implementation plan:
 - Direction: higher is better / lower is better
+- Prediction meaning: 確率 / ラベル / 連続値、陽性ラベルと符号化・クラス順
 - Sanity check:
 
 ## Validation
@@ -36,6 +37,7 @@
 - Grouping key:
 - Stratification key:
 - Leakage risks:
+- Forecasting only: 系列キー / 時間列 / 予測起点・期間 / 外生変数の利用可能時点
 - Fold file:
 - CV/LB correlation check:
 

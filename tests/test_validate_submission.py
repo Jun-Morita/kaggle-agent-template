@@ -51,3 +51,27 @@ def test_validate_submission_rejects_non_finite_predictions(tmp_path) -> None:
     errors = validate_submission(submission_path, sample_path, id_columns=["id"])
 
     assert "non-finite prediction values found: ['target']" in errors
+
+
+def test_validate_submission_preserves_identifier_spelling(tmp_path) -> None:
+    sample = tmp_path / "sample.csv"
+    submission = tmp_path / "submission.csv"
+    sample.write_text("id,target\n001,0\n002,0\n")
+    submission.write_text("id,target\n1,0.2\n2,0.8\n")
+    assert "id order differs from sample submission" in validate_submission(submission, sample)
+
+
+def test_validate_submission_requires_exact_allowed_labels(tmp_path) -> None:
+    sample = tmp_path / "sample.csv"
+    submission = tmp_path / "submission.csv"
+    for allowed, good, bad in [
+        (["True", "False"], ["True", "False"], ["0.8", "false"]),
+        ([str(i) for i in range(10)], ["0", "9"], ["1.5", "10"]),
+    ]:
+        sample.write_text("id,label\n001,0\n002,0\n")
+        submission.write_text(f"id,label\n001,{good[0]}\n002,{good[1]}\n")
+        assert validate_submission(submission, sample, allowed_values=allowed) == []
+        submission.write_text(f"id,label\n001,{bad[0]}\n002,{bad[1]}\n")
+        assert "prediction values outside allowed labels: ['label']" in validate_submission(
+            submission, sample, allowed_values=allowed
+        )

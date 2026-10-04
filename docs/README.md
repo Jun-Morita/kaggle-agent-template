@@ -1,14 +1,12 @@
 # Docs
 
-コンペの全体像を人間が読み返すための日本語ドキュメントを置く場所。
+必要な場面で該当する節だけ読む。実験値・ログの正本は各実験の`SESSION_NOTES.md`と`submit/submissions.csv`。
 
-実験ごとの詳細ログは `workspace/expNNN_name/SESSION_NOTES.md` に残し、ここには次を集約する。
+| 場面 | 文書 |
+|---|---|
+| 全体像・方針・候補を整理する | [competition_report.md](competition_report.md) |
+| 課題に合う評価・提出を選ぶ | [task_workflows.md](task_workflows.md) |
+| 表形式データのbaselineを作る | [tabular_workflow.md](tabular_workflow.md) |
+| 実行・リーク・採否・ensemble・本番とのずれを監査する | [validation_checklist.md](validation_checklist.md) |
 
-- コンペ概要、ルール、metric、提出形式
-- データ仕様、列説明、EDA の主要結果
-- validation 方針と CV / LB の関係
-- 試したアプローチ、採用した判断、失敗した案
-
-新しいコンペでは `docs/competition_report.md` を埋めていく。
-
-特徴量実装前と CV / LB 乖離時は `validation_checklist.md` を使い、fold-safe、採択条件、分布差を確認する。
+新しいルールは既存の該当節へ統合する。コンペ固有の設定は[overview](../competition/overview.md)、使って分かった教訓は実験メモへ残す。

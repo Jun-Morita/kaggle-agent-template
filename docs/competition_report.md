@@ -1,80 +1,32 @@
 # Competition Report
 
-## Overview
+全体像や方針を見直すときに更新する。公式仕様は[overview](../competition/overview.md)、実験詳細は各`SESSION_NOTES.md`、提出値は[提出ログ](../submit/submissions.csv)を参照し、転記しない。
 
-- Competition:
-- URL:
-- Deadline:
-- Task type:
-- Target:
-- Metric:
-- Submission type:
-- Rules last checked:
+## Key Findings
 
-## Data
+- Data / EDA: target, missingness, duplicates, shift, useful figures:
+- Validation choice / leakage risks / reasons for changes:
+- Current anchor experiment / config / why:
+- Worked / did not work / evidence links:
 
-- Official data path:
-- Train rows / files:
-- Test rows / files:
-- ID columns:
-- Target column:
-- Important columns:
+## Local / Production Evaluation
 
-## EDA Summary
+- First comparison: date / source / subgroup differences / uncertainty / proxy limits:
+- CV / LB plot and interpretation:
+- Suspected bias / drift / LB overfit / next check:
 
-- Target distribution:
-- Missing values:
-- Duplicates:
-- Leakage risks:
-- Train / test shift:
-- Useful visualizations:
+## Next Experiments
 
-## Validation
-
-- Fold version:
-- Fold method:
-- Grouping key:
-- Stratification key:
-- Metric implementation:
-- CV sanity checks:
-- CV / LB correlation:
-- First production comparison: date / source / subgroup differences / uncertainty / proxy limits
-
-## Baseline
-
-- First submission version:
-- Source experiment:
-- Model:
-- Submission check result:
-- Current anchor experiment / config:
-- Why this is the anchor:
-
-## CV / LB Tracking
-
-- Plot:
-- Interpretation:
-- Suspected LB overfit:
-- Next validation fix:
-
-## Approaches Tried
-
-### Worked
-
--
-
-### Did Not Work
-
--
-
-### Next Experiments
+候補は期待効果・根拠・コストで少数に絞る。Trackは`solid`（根拠あり）/ `exploratory`（探索）。
 
 | Priority | Track | Idea | Evidence / transfer conditions | Expected value | Cost | Main risk |
 |---|---|---|---|---|---|---|
 
-未実験の大枠の案を棄却・保留する場合は、候補の下に「現行案に有利な条件／自作評価を通らない証拠と出典／矛盾と判断理由／再検討条件」を短く残す。実験済みなら`SESSION_NOTES.md`を参照する。
+未実験の大枠の案を棄却・保留する場合だけ、以下を残す。実験済みなら実験メモへリンクする。
+
+- Idea / incumbent advantage / independent evidence and source:
+- Contradictions / decision reason / bottleneck evidence / revisit condition:
 
 ## References
 
--
-
-実験詳細とCVは各`SESSION_NOTES.md`、提出スコアは`submit/submissions.csv`を参照する。
+- 関連する`references/knowledge/`のnote:

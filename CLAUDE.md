@@ -1,167 +1,79 @@
 # Kaggle Agent Template
 
-このリポジトリは、Claude Code で Kaggle を中心としたデータ分析コンペを進めるための軽量テンプレートです。
+コンパクトで、実験の再現と学びにつながる運用を保つ。共通ルールを増やす前に、既存の記録・検査で扱えないか確認する。
 
 ## 作業開始
 
-最初に`git status --short`を確認する。コンペの分析・実装では`competition/overview.md`も読む。CSV / foldの前提が合わない場合は同ファイルの`Format Mapping`に従い、以下の必須欄・コマンド・成果物を読み替える。コンペ固有の例外は本書に追記しない。
+- `git status --short`で既存の変更を確認する。コンペの分析・実装では`competition/overview.md`を読む。
+- 学習・提出コードを書く前に、公式metricと実装方針、提出形式、validation、外部データ・モデル・internetのルールを明確にする。該当しない欄は理由付きでN/Aとする。
+- CSV / foldの前提が合わない場合は`competition/overview.md`の`Format Mapping`で必須欄・コマンド・成果物を読み替える。コンペ固有の例外は本書に追記しない。
+- 文書は必要なものの該当節だけ読む。全項目を毎回埋めることを目的にしない。
 
-他の文書はタスクに必要なときだけ読む。
+| 作業 | 参照先 |
+|---|---|
+| 再開・実験選定 | 現行anchorの`SESSION_NOTES.md`、必要なら最新の日報・`docs/competition_report.md` |
+| 課題別の評価・提出 | `docs/task_workflows.md`（表形式の前処理は`docs/tabular_workflow.md`） |
+| baseline監査・特徴量・ensemble・採否判断・CV/LB乖離 | `docs/validation_checklist.md` |
+| 外部知識の調査 | `references/knowledge/INDEX.md`と関連note |
+| 実験構成・予測保存 | `workspace/README.md` |
 
-- 作業再開・次アクション: 最新の`daily_reports/*.md`
-- 外部知識の調査: `references/knowledge/INDEX.md`と関連note
-- 実験の選定・全体戦略: `docs/competition_report.md`と現行anchorの`SESSION_NOTES.md`
-- baseline監査・特徴量実装・ensemble・CV/LB乖離: `docs/validation_checklist.md`
-- GPUモデルの利用: `uv run python scripts/check_gpu.py`
+## 環境と検証
 
-コンペ仕様、評価指標、提出形式、fold 方針が曖昧なまま学習コードを書かない。
+- `uv sync`で環境を準備し、Python・lint・notebookは`uv run`経由で実行する。依存追加は必要時だけ行う。
+- GPUが必要なら`uv run python scripts/check_gpu.py`で確認する。モデル選択は計算予算に合わせ、GPUライブラリの導入は公式手順に従う。
+- metricを変更したら`src/kaggle_agent_template/metrics.py`と手計算ケース等のテストを更新し、`uv run pytest`で確認する。
+- フォールバックを持つコードは、ロードした成果物・実行経路・発生件数を検査する。通常のsmokeでは予期しないフォールバックを0件とし、意図した代替処理は別ケースで検査する。
+- 実装後は変更に合った検証を行う。検証できなければ理由と未確認事項を報告する。チェックリストや指示文だけでは動作検証にならない。
 
-## 実装前ガード
+## 実験の進め方
 
-`competition/overview.md` の次の項目が空なら、学習コードや提出コードを書かない。まず不足情報を埋める。
+1. 最小baselineで評価から提出物の生成・検証まで通す。実提出はユーザー承認後に行う。
+2. 比較基準のanchorとfold・metricを固定する。分割はgroup・時系列・重複を考慮し、`workspace/folds/`にversion付きで保存する。変更時は理由を残し、anchorも再評価する。
+3. 1実験1仮説を基本に、根拠・予算・停止条件・採択条件を先に記録する。小さなsmokeからfull評価へ進め、前処理は学習側だけでfitする。
+4. 同じ条件でanchorと直接比較する。fold別score・平均と標準偏差・overall OOF・実行時間・重要subgroupを区別し、誤り分析から採否と次の仮説を決める。
+5. 失敗・中断もRun Logに残す。不完全な結果を完成した評価として比較せず、再利用できる知見と成立条件を短く書く。
 
-- Metric の公式定義とローカル実装方針
-- Submission の type、required file、required columns
-- Validation の fold method、grouping key、leakage risks
-- Rules の external data、pretrained models、internet
+- 実験は`templates/experiment/`から`workspace/expNNN_name/`へ作る。同じコードのパラメータ違いは`configs/*.yaml`、方針変更は新しい実験に分ける。再実行する処理はnotebookから`.py`へ移す。
+- seed・fold・metric・主要パラメータはconfigに置く。`repro.set_seed()`と`write_run_metadata()`でseed、git SHA・dirty state・config hash・ライブラリversionを記録する。
+- 完了した評価の予測は`workspace/README.md`に従いrunごとに保存する。データ・モデル・生の取得物・生成物はGit管理外に置き、anchor・比較・提出再現に必要な成果物は保持する。
+- baseline確立後は現コンペ・類似コンペの公開解法から転用条件を調べ、期待効果・根拠・コストで候補を絞る。特徴量はfamily単位で効果を切り分け、HPOは試行数・時間を制限する。停滞時は同系統の微調整を続けず、誤り分析と候補の見直しを行う。
 
-## 実行可能なガード
+## 判断で守ること
 
-- metric を実装・変更したら `src/kaggle_agent_template/metrics.py` と `tests/` を更新し、`uv run pytest` を実行する。
-- フォールバックを持つコードは、成果物のロード・意図した経路の実行・代替処理の発生件数を検査する。通常のsmokeでは予期しないフォールバックを0件とし、既知の入力と期待出力（必要なら根拠のある性能下限）で生存確認する。意図したフォールバックは別ケースで動作を確認する。
-- 提出CSVを作ったら `scripts/validate_submission.py` で `sample_submission.csv` と突き合わせる。
-- 提出したらCV、LB、提出ファイルhashを `submit/submissions.csv` に記録し、重要な判断だけ `submit/SUBMISSIONS.md` に要約する。
-- Public LB を記録したら `scripts/plot_cv_lb.py` で CV / LB plot と直近傾向を更新する。
-- 実験実行時は seed を適用し、`<output.dir>/run_metadata_*.json` に git SHA、dirty state、config hash、主要ライブラリversionを残す。
+- Public LBを特徴量・HPO・blend重みの主要な選択基準にしない。候補や重みの選別と採否の確認を分け、探索値を検証済みの改善と混同しない。
+- 自作評価器は本番の最初の信号が得られた時点で、比較可能なsubgroup・相手・時期ごとに照合する。ずれの量・不確実性・適用範囲を全体レポートへ残し、照合前はその評価だけで大枠を確定しない。
+- 大枠の変更を棄却する前に、現行案に有利な評価条件、自作評価を通らない証拠と出典、矛盾と理由を記録する。証拠不足は保留とし、予算による見送りと性能上の棄却を区別する。
+- 予算不足はGPU・CPU・I/Oの計測や工数の見積根拠から律速を調べ、未計測なら推測と明記する。保留案には再検討条件を残す。
+- ensembleはbest single・単純平均に対する改善、安定性、推論コストで判断する。OOF対応とstackingのリーク監査はチェックリストに従う。
+- CV/LBの順位や相関が安定していても、水準のずれを見逃さない。偏り・自作評価の仮定・時間変化も調べ、矛盾があれば件数を待たずに監査する。
 
-## 環境とGPU
+## 記録先と外部情報
 
-- Python 実行、lint、notebook 起動は `uv run` 経由を基本にする。
-- `uv sync` 後は `src/kaggle_agent_template/` が editable install される。手動の `PYTHONPATH` 追加に依存しない。
-- Kaggleでは`.claude/skills/nvidia-kaggle-skill/`を使う。必要に応じてKaggle CLIも使う。
-- GPUを使う場合だけ、`uv run python scripts/check_gpu.py`で利用可否を確認する。
-- GPU が使える場合は、コンペのタスクに合う GPU 対応ライブラリを優先して検討する。
-- PyTorch などの重い GPU 依存は、コンペで必要になってから追加する。
-- 導入コマンドは、対象ライブラリの公式ドキュメントに基づいて提案する。
-- Kaggle Notebook で実行する場合は、accelerator、internet、external data、pretrained model のルールを確認する。
+| 内容 | 正本 |
+|---|---|
+| コンペ仕様・形式の読み替え | `competition/overview.md` |
+| 仮説・run・結果・採否 | 実験の`SESSION_NOTES.md`（未実験案は全体レポートの候補欄） |
+| CV・LB・提出物hash | `submit/submissions.csv`。重要な採否理由だけ`submit/SUBMISSIONS.md` |
+| 全体の発見・戦略・次の候補 | `docs/competition_report.md`。仕様や実験値は転記せず元へリンク |
+| 外部知識 | `references/knowledge/`。URL・取得日・作者・要点・適用条件・リスクを要約しINDEXを更新 |
+| 作業の引き継ぎ | 必要時に`daily_reports/YYYYMMDD.md`。判断・未解決事項・次アクションだけ |
 
-## 進め方
+- Kaggleの調査・操作は同梱の`.claude/skills/nvidia-kaggle-skill/`を使う。`SKILL.md`から必要なworkflowだけ読み、外部スクリプトは内容を確認して実行する。Kaggle以外には使わない。
+- API利用前に`KAGGLE_API_TOKEN`の設定を確認する。未設定なら`.env.example`とKaggle設定画面を案内する。tokenは環境変数か`.env`から読み、表示・ログ出力・commitしない。
+- 調査結果・取得物は内容を確認して採用する。rawは`references/raw/`、実験に使った出典は実験メモへ残す。skillの`data/submissions.jsonl`は操作履歴であり、提出値の正本とは分ける。
 
-1. `competition/overview.md` にコンペ情報を整理する。
-   Kaggleの場合は、先に`KAGGLE_API_TOKEN`と`.env`を確認し、同梱skillで公式情報を取得する。
-2. notebook、discussion、外部記事から使う知識を `references/knowledge/` に要約し、`INDEX.md` を更新する。
-3. `workspace/expNNN_name/` に実験ディレクトリを作る。
-4. 最小 baseline で提出ファイルを作り、提出形式が通るかを先に確認する。
-5. 信頼できる CV を作り、その後に特徴量やモデルを改善する。
-6. 実験ごとの仮説、変更、結果、出典は `SESSION_NOTES.md` だけに記録する。
-7. コンペ理解は `docs/competition_report.md` に日本語で集約し、実験表は重複させない。
-8. その日の判断と次アクションだけを `daily_reports/YYYYMMDD.md` に残す。
-9. 提出値は `submit/submissions.csv` を正本とし、重要な採否理由だけ `submit/SUBMISSIONS.md` に残す。
+## 提出
 
-## 外部知識の扱い
+- CSV / kernel用ひな形を必要に応じて使う。CSVは`scripts/validate_submission.py`で公式sampleと照合し、ラベル・値域等の追加条件は課題別ガイドを参照する。
+- 提出用READMEに元実験・config・環境・入力・checkpoint・推論設定・再現コマンドを残す。提出物を再生成し、学習側との推論の一致・実行制限・ルール適合を確認する。
+- 提出で確認する仮説を明確にする。最終選択の期限と基準は再検証時間を残してoverviewへ記録し、Public LBだけで選ばない。複数枠では異なる弱点を持つ検証済み候補を検討する。
+- 実提出・dataset upload・public dataset作成はユーザー承認後に行う。
+- `scripts/record_submission.py`で提出記録を更新し、LB判明時に`scripts/plot_cv_lb.py`で関係を確認する。少数点の相関だけで自動採否しない。
 
-- Kaggle notebook、discussion、外部記事を読んだら、使えそうな知識を `references/knowledge/` に md で残す。
-- raw の HTML、ipynb、スクリーンショット、取得ファイルは `references/raw/` に置く。raw は Git に入れない。
-- md には URL、取得日、作者、対象コンペ、要点、使える場面、リスク、実験候補を書く。
-- 重要な知識を追加したら `references/knowledge/INDEX.md` も更新する。
-- 内容をそのまま長く貼らない。要約し、出典を明記する。
-- notebook や discussion 由来のアイデアを実験に使う場合は、`SESSION_NOTES.md` に出典を書く。
-- 提出判断に重要な外部知識は `submit/SUBMISSIONS.md` にも出典を残す。
-- rules の external data、pretrained models、internet が不明な場合は、外部データや外部モデルを使うコードを書かない。
+## 伝え方とcommit
 
-## 実験ルール
-
-- 比較基準となるanchorを固定し、候補と同じfold・metricで直接比較して事前の採択条件を満たした場合に置き換える。変更時は理由と新versionを記録し、anchorも再評価する。Public LBを特徴量・HPO・blend重みの主要な選択基準にしない。
-- 自作評価器は本番の最初の信号が得られた時点で、比較可能なsubgroup・相手・時期ごとにローカル値と実測を照合し、ずれの量・不確実性・適用範囲を`docs/competition_report.md`へ記録する。照合前や本番情報が不足する間は探索用とし、その評価だけで大枠を確定しない。
-- 実験候補は「期待効果 × 根拠の強さ ÷ 実装・計算コスト」で優先する。手軽さだけで選ばない。
-- baselineとCVの確立後、NVIDIA skillで現コンペと類似コンペの上位解法を調べ、転用条件とルール適合を確認し、根拠付き候補を3〜5件に絞って`docs/competition_report.md`の`Next Experiments`へ`solid`または`exploratory`として記録する。再調査は停滞時か方針転換時だけ行う。
-- 1実験1仮説を基本とし、開始前に根拠、計算予算、停止条件、採択条件を`SESSION_NOTES.md`に書く。
-- 小規模smoke testで入出力とfold内fitを確認してからfull CVを実行する。特徴量はfamily単位のablationで効果を切り分け、HPOはtrial数・時間上限を決めて粗い探索から絞る。
-- fold別score、平均・標準偏差、overall OOF score、実行時間を記録し、重要subgroupとOOFの誤りもanchorと比較する。集計方法の異なるscoreを混同しない。
-- 大枠の変更（アプローチ・モデル系統・問題設定・データ）を棄却する前に、現行案に有利な評価条件、自作評価を通らない証拠と出典、食い違いと棄却理由を記録する。証拠不足は保留とし、予算による見送りと性能上の棄却を区別する。予算不足はGPU・CPU・I/Oの計測値や実装工数の見積根拠から律速を特定し、未計測なら推測と明記して再検討条件を残す。記録先は`SESSION_NOTES.md`、実験前の案は`docs/competition_report.md`の候補欄とする。
-- 改善が鈍った系統の微調整を続けず、誤り分析、データ理解、異なるモデル系統へ移る。
-- ensembleはOOFのID・fold・予測列の対応を監査し、best singleと単純平均に対する改善・安定性・推論コストで採否を決める。重み調整やstackerの学習に使った行で性能を評価しない。詳細は`docs/validation_checklist.md`。
-- 1実験1ディレクトリで管理し、notebookだけで完結させない。
-- notebook は EDA や試行錯誤に使う。再実行したい学習・推論は `.py` に移す。
-- 実験ディレクトリには `SESSION_NOTES.md`, `config.yaml`, `run.sh`, `train.py` を置く。
-- 同じコードでパラメータだけを変える場合は、同じ実験ディレクトリ内の `configs/*.yaml` に分ける。大きく方針が変わる場合だけ新しい実験ディレクトリを作る。
-- seed、fold、metric、主要パラメータは config に置く。
-- seed は `kaggle_agent_template.repro.set_seed()` で適用する。
-- 実験時は `<output.dir>/run_metadata_*.json` に git SHA、dirty state、config hash を残す。
-- 完了したfull CVのOOFとtest予測を`results/<run-id>/`に保存し、ID、fold、予測列の意味と検証対象行を明記する。保存契約は`workspace/README.md`。再実行で過去の予測を上書きしない。
-- `SESSION_NOTES.md`のRun Logにrun ID、config、完了・失敗・中断、結果と成果物への参照を残す。不採用・失敗の理由も保持し、未完了のCVを完成した結果として比較しない。
-- 初回は高性能モデルより先に、最小 baseline で submission が受理されることを確認する。
-- fold はデータ単位を確認してから決める。group や時系列がある場合はランダム KFold にしない。
-- fold を作ったら `workspace/folds/` に保存し、使った version を `SESSION_NOTES.md` と config に記録する。
-- 前処理の fit は train fold のみで行う。baselineのfull CV後は実装と切り離した監査を行い、コードの根拠・CVへの影響・修正案を`SESSION_NOTES.md`へ残す。
-- target、集約、ランキング、encoding を使う特徴量は `docs/validation_checklist.md` で fold-safe か確認する。
-- metric 実装は、小さい手計算ケースや公開 baseline と照合してから実験に使う。
-- ローカル評価と本番がずれたら、fold・metric・リークに加え、評価対象の偏り・自作評価器の仮定・時間変化を調べる。順位や相関が安定していても水準のずれを見逃さない。
-- CV / LB が3件そろったら相関を診断し、以後は Public LB 更新ごとに plot を更新する。直近5件の相関が弱ければ追加提出より先に validation を監査する。少数点の相関だけで自動採否しない。水準のずれや外部証拠との矛盾があれば件数を待たずに監査する。
-- 実験詳細は `SESSION_NOTES.md`、CV/LBと提出物情報は `submit/submissions.csv` を正本にする。`submit/SUBMISSIONS.md` は重要な判断の要約だけにする。
-- データ、モデル、提出物などの大容量ファイルは Git に入れない。
-- 中間モデルと OOF は Git 管理外に置き、anchor、提出再現、比較に不要な成果物は定期的に削除する。
-
-## Kaggle skill
-
-Kaggleコンペでは、同梱の`.claude/skills/nvidia-kaggle-skill/`をoverview、rules、public notebook、discussion、writeup、kernel reproduction、kernel submission、dataset uploadの調査や操作に使う。Kaggle以外のコンペでは使わない。
-
-Kaggle APIを使う前に、`KAGGLE_API_TOKEN`と`.env`の準備をユーザーへ案内する。未準備なら`.env.example`のコピーとKaggle設定画面でのtoken発行を案内し、準備されるまでAPIを呼ばない。tokenの値は読めても表示しない。
-
-skillが発火したら、`SKILL.md`から依頼に対応するworkflow markdownだけを追加で読む。他のworkflowを先読みしない。
-第三者 skill に含まれる `scripts/` は外部コードとして扱い、実行前に何をするか確認する。
-
-使う場合も、このリポジトリの運用ルールを優先する。
-
-- 取得した competition overview、rules、metric、submission 情報は `competition/overview.md` に反映する。
-- notebook、discussion、writeup 由来の知識は `references/knowledge/` に出典付きで要約し、`INDEX.md` を更新する。
-- 再現した kernel や notebook は、実験に使うなら `workspace/expNNN_name/` に整理する。raw 取得物は `references/raw/` に置き、Git に入れない。
-- skill が生成した report、cache、download を読んでから判断する。生成物の存在だけで採用しない。
-- `data/submissions.jsonl`はkernel提出の操作履歴として参照し、CV、LB、提出物情報の正本は`submit/submissions.csv`とする。
-- `KAGGLE_API_TOKEN` は `.env` または環境変数から読む。secret として扱い、表示、ログ出力、commit をしない。
-- `.env.example` はサンプルとして管理するが、実トークン入りの `.env` は Git に入れない。
-- competition submission、dataset upload、public dataset 作成は外部に影響するため、必ずユーザー承認後に行う。
-
-## 提出前チェック
-
-- 最終提出の選択期限と基準を、再検証時間を残して`competition/overview.md`に先に記録する。Public LBだけで選ばずローカル評価と頑健性を確認し、複数枠では弱点や誤りの異なる候補の組合せを検討する。多様性だけを理由に未検証・劣化した候補を選ばない。
-
-- 行数、列名、ID 順序、欠損、有限値、値域を確認する。
-- `uv run python scripts/validate_submission.py --sample data/raw/sample_submission.csv --submission submit/vNNN_expNNN_name/submission.csv` を実行する。
-- LBで確認する仮説を明確にする。ほぼ同じ予測を繰り返し提出しない。
-- 提出元の実験、fold、モデル、CV、推論設定を記録する。提出ディレクトリのREADMEに環境・入力・checkpoint・再現コマンドを残し、Notebookの隠れた状態なしに提出物を再生成・検証する。
-- `uv run python scripts/record_submission.py ...` で `submit/submissions.csv` をversion単位で登録・更新する。
-- Public LB が分かったら `uv run python scripts/plot_cv_lb.py` を実行し、CV / LB の関係を確認する。
-- CSV 提出は `templates/submit_csv/`、Kaggle kernel 提出は `templates/submit_kernel/` を必要に応じてコピーして使う。
-- Kaggle への実提出はユーザー承認後に行う。
-
-## コンペ理解ドキュメント
-
-- `docs/competition_report.md` は人間向けの日本語要約として更新する。
-- EDA の細かい出力や実験ログをすべて貼らず、重要な発見、判断、次の実験候補に絞る。
-- データ仕様、metric、validation、CV / LB の関係、試したアプローチの要約を最新化する。
-- 実験の詳細と数値は `workspace/expNNN_name/SESSION_NOTES.md`、提出値は `submit/submissions.csv` に残す。日報には判断と次アクションだけを書く。
-
-## Claude Code の振る舞い
-
-- 既存ファイルを読んでから作業する。
-- 不明点は仮説を添えて短く確認する。
-- 大きな変更では短い方針を出してから実装する。
-- 実装後は実行可能な検証を行う。
-- 検証できない場合は、理由とリスクを記録する。
-
-## 文章の書き方
-
-- ユーザー向け説明と文書は、指定がなければ簡潔な日本語で書く。結論を先に述べ、何を変更したか、なぜ必要か、何を確認したかを具体的に伝える。
-- 確認できた事実と推測を区別する。数値やファイル名を示し、未確認の効果を断定しない。
-- 生成AIにありがちな定型句や大げさな修飾を避ける。「包括的に改善」「シームレスに連携」「強力なソリューション」ではなく、対象と動作を書く。例：「堅牢性を向上」→「提出CSVの欠損値を検出」。
-- 依頼の言い換え、過剰な称賛、同じ結論の繰り返しは省く。見出しや箇条書きは、内容を整理するために必要な場合だけ使う。
-- 不自然な直訳や独自の造語を避け、一般的な技術用語を使う。説明が必要な用語は初出で短く補足する。
-
-## Commit message
-
-- 作業の区切りでは staging 対象と commit message 案を示す。`git commit` はユーザーが実行する。
-- メッセージは短い英文1行とし、本文・箇条書き・署名は付けない。
-- `docs:`、`fix:`、`exp001:` などの接頭辞に続けて、`add`、`fix`、`record` などの動詞で具体的な変更を書く。
-- `update files` や `enhance workflow` のような曖昧な表現、誇張、生成AIの定型句を避ける。会話の経緯ではなく、差分の内容を表す。
-- 例：`docs: clarify commit messages and writing rules`
+- 既存ファイルを読み、大きな変更では短く方針を伝えてから作業する。不明点は仮説を添えて確認する。
+- 説明と文書は簡潔な日本語で、結論・変更・理由・検証を具体的に述べる。事実と推測を区別し、未確認の効果を断定しない。
+- 依頼の言い換え、過剰な称賛、誇張、定型句、造語、不自然な直訳を避ける。「堅牢性を向上」より「提出CSVの欠損値を検出」のように対象と動作を書く。
+- 作業の区切りでstaging対象とcommit案を示す。`git commit`はユーザーが実行する。
+- commit messageは短い英文1行。本文・署名を付けず、接頭辞と動詞で差分を表す。例：`docs: simplify experiment notes`。`update files`など曖昧な表現は避ける。

@@ -8,7 +8,7 @@ baseline評価後、特徴量実装前、ensemble時、方針の棄却前、ロ�
 
 - [ ] 保存済みfoldをIDで読み込み、欠損・重複・対象行の不一致を検出する
 - [ ] 本番の予測対象に応じたリーク単位（entity、重複サンプル、augmentation元等）が学習側と検証側をまたがない
-- [ ] 時系列では未来情報が過去の学習・特徴量生成に入らない
+- [ ] 時系列では本番と同じ予測起点・期間を再現し、期間内の実targetをlag等へ流用していない
 - [ ] fold変更時は理由と新versionを残し、anchorも同じ条件で再評価する
 
 ## Fold-safe feature engineering

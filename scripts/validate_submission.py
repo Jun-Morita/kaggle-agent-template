@@ -31,11 +31,13 @@ def validate_submission(
     max_value: float | None = None,
     require_numeric: bool = False,
     check_id_order: bool = True,
+    allowed_values: list[str] | None = None,
 ) -> list[str]:
     errors: list[str] = []
 
-    sample = pd.read_csv(sample_path)
-    submission = pd.read_csv(submission_path)
+    # Preserve identifier spelling and label tokens (e.g. 001, True, 3).
+    sample = pd.read_csv(sample_path, dtype="string")
+    submission = pd.read_csv(submission_path, dtype="string")
 
     sample_columns = list(sample.columns)
     submission_columns = list(submission.columns)
@@ -86,6 +88,11 @@ def validate_submission(
 
     if prediction_columns:
         predictions = submission[prediction_columns]
+        if allowed_values is not None:
+            invalid_labels = predictions.notna() & ~predictions.isin(allowed_values)
+            if invalid_labels.any().any():
+                invalid_columns = list(invalid_labels.any()[invalid_labels.any()].index)
+                errors.append(f"prediction values outside allowed labels: {invalid_columns}")
         numeric_predictions = predictions.apply(pd.to_numeric, errors="coerce")
         non_finite = numeric_predictions.isin([float("inf"), float("-inf")])
         if non_finite.any().any():
@@ -123,6 +130,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--min-value", type=float, default=None)
     parser.add_argument("--max-value", type=float, default=None)
     parser.add_argument("--require-numeric", action="store_true")
+    parser.add_argument("--allowed-values", nargs="+", help="Exact allowed CSV label tokens")
     parser.add_argument("--no-check-id-order", action="store_true")
     return parser.parse_args()
 
@@ -138,6 +146,7 @@ def main() -> int:
         max_value=args.max_value,
         require_numeric=args.require_numeric,
         check_id_order=not args.no_check_id_order,
+        allowed_values=args.allowed_values,
     )
 
     if errors:

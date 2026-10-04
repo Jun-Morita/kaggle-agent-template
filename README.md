@@ -3,6 +3,7 @@
 Claude Code で Kaggle などのデータ分析コンペを進めるための、軽量テンプレートです。
 コンペ仕様、実験結果、提出履歴の置き場所を決め、何を試して何が良かったかを追えるようにします。
 学習済みモデルやコンペ固有の学習コードは含みません。
+まずはコンペ仕様・実験メモ・提出ログを使い、全体レポートや日報は整理・引き継ぎが必要なときに追加します。
 
 基本は **仕様を整理 → 実験 → 提出を検証 → 結果を記録** の4ステップです。
 Kaggle の調査用に NVIDIA の skill、実験用に config・seed・実行情報の記録、提出用に CSV 検証と CV / LB の可視化を用意しています。
@@ -60,6 +61,8 @@ Kaggle なら同梱の nvidia-kaggle-skill を使い、認証は .env から読�
 
 ## 実験を進める
 
+課題ごとの手順や検査は[文書一覧](docs/README.md)から必要な節だけ参照してください。
+
 まず [competition/overview.md](competition/overview.md) に評価指標・提出形式・fold 方針・ルールを整理します。
 **CV** は手元での検証スコア、**fold** は学習・検証の分割単位、**LB** はコンペ側のスコアです。
 
@@ -106,7 +109,7 @@ uv run python scripts/validate_submission.py \
 
 行数、列名、ID の重複・順序、欠損、予測の無限値を検証します。既定では先頭列を ID とみなします。
 複合 ID は `--id-columns id1,id2`、数値予測は `--require-numeric`、値域は `--min-value` / `--max-value` で指定します。
-CSV 以外の提出形式は、コンペに合わせて検証を実装してください。
+ラベルの許容値は `--allowed-values True False` のように指定できます。CSV以外は `competition/overview.md` の `Format Mapping` に検証方法を記録します。
 
 提出用READMEに環境・入力・再現コマンドを記録し、提出物を再生成できることも確認します。
 実提出・データアップロードはユーザーの承認後に行います。提出後は次の例の CV / LB を実測値に置き換えて記録します。
