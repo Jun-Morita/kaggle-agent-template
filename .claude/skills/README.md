@@ -13,11 +13,13 @@ This repository includes NVIDIA's project-local Kaggle skill:
 
 - Upstream: https://github.com/NVIDIA/nvidia-kaggle
 - Vendored revision: `2b78cf29f5f30680764292a6592de8d53d4147a8`
-- Upstream checked: 2026-09-05; `main` matches the vendored revision (no update needed).
+- Upstream checked: 2026-11-06; `main` matches the vendored revision (no update needed).
 - License: MIT; see `nvidia-kaggle-skill/LICENSE`
 - Local compatibility changes: removed unsupported `permissions` frontmatter and use the root `uv` environment
 
 Use this skill for Kaggle competitions. Claude Code discovers it from the project automatically; no user-level plugin installation is required. Do not use it for non-Kaggle competitions.
+
+Codex follows the root `AGENTS.md` to read this skill explicitly. The files stay in one location; no duplicate skill copy or user-level installation is required. Automatic discovery in Codex's skill picker is not configured by this template.
 
 Keep secrets in the root `.env`, never in this directory. Before updating, review the upstream diff and replace the whole skill directory so `SKILL.md`, workflow files, and `scripts/` stay in sync. Preserve the upstream license and update the revision above.
 

@@ -1,6 +1,6 @@
 # kaggle-agent-template
 
-Claude Code で Kaggle などのデータ分析コンペを進めるための、軽量テンプレートです。
+Claude Code / Codex で Kaggle などのデータ分析コンペを進めるための、軽量テンプレートです。
 コンペ仕様、実験結果、提出履歴の置き場所を決め、何を試して何が良かったかを追えるようにします。
 学習済みモデルやコンペ固有の学習コードは含みません。
 まずはコンペ仕様・実験メモ・提出ログを使い、全体レポートや日報は整理・引き継ぎが必要なときに追加します。
@@ -10,7 +10,7 @@ Kaggle の調査用に NVIDIA の skill、実験用に config・seed・実行情
 
 ## はじめる
 
-Git、[uv](https://docs.astral.sh/uv/getting-started/installation/)、Claude Code を用意します。Python は 3.12 を使います。
+Git、[uv](https://docs.astral.sh/uv/getting-started/installation/)、Claude Code または Codex を用意します。Python は 3.12 を使います。
 
 ### 1. リポジトリと環境を準備する
 
@@ -40,9 +40,9 @@ uv run --env-file .env kaggle competitions list
 `.env` は Git 管理外です。トークンをログや commit に含めないでください。
 データ取得前に、Kaggle のコンペページで参加・ルールへの同意を済ませます。Kaggle 以外ではこの手順は不要です。
 
-### 3. Claude Code に最初の作業を頼む
+### 3. エージェントに最初の作業を頼む
 
-リポジトリのルートで `claude` を起動し、次を渡します。
+リポジトリのルートで `claude` または `codex` を起動し、次を渡します。Codexは[AGENTS.md](AGENTS.md)から共通ルールの[CLAUDE.md](CLAUDE.md)を読みます。
 
 ```text
 CLAUDE.md に従って、このコンペの準備をしてください。
@@ -55,8 +55,8 @@ Kaggle なら同梱の nvidia-kaggle-skill を使い、認証は .env から読�
 
 ### 既存リポジトリに導入する場合
 
-既存の変更を commit してから、テンプレートを別ディレクトリへ clone し、Claude Code に統合を依頼します。
-既存のコード・データ・README・LICENSE を保持し、`CLAUDE.md`、`pyproject.toml`、`.gitignore` は既存設定とマージします。
+既存の変更を commit してから、テンプレートを別ディレクトリへ clone し、エージェントに統合を依頼します。
+既存のコード・データ・README・LICENSE を保持し、`AGENTS.md`、`CLAUDE.md`、`pyproject.toml`、`.gitignore` は既存設定とマージします。
 `.git` や `.venv` はコピーせず、導入後に `uv sync` とテストを実行してください。
 
 ## 実験を進める
@@ -72,7 +72,7 @@ Kaggle なら同梱の nvidia-kaggle-skill を使い、認証は .env から読�
 cp -r templates/experiment workspace/exp001_baseline
 ```
 
-Claude Code への依頼例:
+エージェントへの依頼例:
 
 ```text
 competition/overview.md に沿って workspace/exp001_baseline に最小baselineを実装してください。
@@ -138,6 +138,7 @@ CV と LB がずれたら、[validation checklist](docs/validation_checklist.md)
 | 保存先 | 内容 |
 |---|---|
 | [CLAUDE.md](CLAUDE.md) | エージェントの作業ルール |
+| [AGENTS.md](AGENTS.md) | Codexから共通ルール・同梱skillを読む入口 |
 | [competition/overview.md](competition/overview.md) | コンペ仕様・評価指標・ルール |
 | [data/](data/README.md) | 公式データ・加工データ（データ本体は Git 管理外） |
 | [workspace/](workspace/README.md) | 実験コード・config・`SESSION_NOTES.md`、固定した fold |
@@ -153,11 +154,28 @@ CV と LB がずれたら、[validation checklist](docs/validation_checklist.md)
 
 NVIDIA の [nvidia-kaggle-skill](https://github.com/NVIDIA/nvidia-kaggle) を `.claude/skills/` に同梱しています。
 Claude Code から追加インストールなしで、概要・ルールの取得、公開 notebook・discussion・writeup の調査、kernel の再現・提出、dataset のアップロードに使えます。
+Codexは `AGENTS.md` の指示に従って同じskillを明示的に読みます。skill一覧への自動登録は行いません。
 Kaggle 以外のコンペには使いません。
 
 調査結果は `competition/overview.md` や `references/knowledge/` に要約します。
 kernel 提出の操作履歴 `data/submissions.jsonl` と、CV / LB をまとめる `submit/submissions.csv` は役割が異なります。
 同梱版の revision と更新手順は [skill の管理情報](.claude/skills/README.md) を参照してください。
+
+## Claude CodeとCodexを併用する
+
+両方を別ターミナルで起動できます。編集対象・実験名・出力先を分け、同じコードを並行変更する場合はgit worktree等で作業場所を分けます。実験メモと提出ログは共通ルールで記録します。
+
+Claude CodeからCodexへレビューや作業を依頼したい場合は、任意で[OpenAIのcodex-plugin-cc](https://github.com/openai/codex-plugin-cc)を使えます。別々に起動するだけなら不要です。利用にはNode.js 18.18以降とCodexの認証が必要です。
+Claude Code内で次を実行します（テンプレートにはpluginを同梱・自動導入しません）。
+
+```text
+/plugin marketplace add openai/codex-plugin-cc
+/plugin install codex@openai-codex
+/reload-plugins
+/codex:setup
+```
+
+初回は `/codex:review` で読み取り専用レビューを試せます。レビューにもCodexの利用枠を使います。導入手順・要件の詳細は[公式README](https://github.com/openai/codex-plugin-cc/blob/main/README.md)を参照してください。
 
 ## 開発時の確認
 
