@@ -111,7 +111,7 @@ uv run python scripts/validate_submission.py \
 複合 ID は `--id-columns id1,id2`、数値予測は `--require-numeric`、値域は `--min-value` / `--max-value` で指定します。
 ラベルの許容値は `--allowed-values True False` のように指定できます。CSV以外は `competition/overview.md` の `Format Mapping` に検証方法を記録します。
 
-提出用READMEに環境・入力・再現コマンドを記録し、提出物を再生成できることも確認します。
+提出用READMEに環境・入力・再現コマンドを記録します。CSVは再生成・形式を検証し、コード提出は提出環境で梱包済みのコード・資産を最初から実行して出力・時間・メモリを確認します。未検証ならその状態を明記します（[kernel提出チェック](templates/submit_kernel/README.md)）。
 実提出・データアップロードはユーザーの承認後に行います。提出後は次の例の CV / LB を実測値に置き換えて記録します。
 LB が未確定なら `--public-lb` を省略し、確定後に同じ version で更新します。
 
@@ -150,7 +150,7 @@ CV と LB がずれたら、[validation checklist](docs/validation_checklist.md)
 
 生の取得物は `references/raw/`、実験の生成物は `results/` に置き、Git に入れません。
 
-## 同梱の Kaggle skill
+## 同梱の Kaggle skills
 
 NVIDIA の [nvidia-kaggle-skill](https://github.com/NVIDIA/nvidia-kaggle) を `.claude/skills/` に同梱しています。
 Claude Code から追加インストールなしで、概要・ルールの取得、公開 notebook・discussion・writeup の調査、kernel の再現・提出、dataset のアップロードに使えます。
@@ -160,6 +160,8 @@ Kaggle 以外のコンペには使いません。
 調査結果は `competition/overview.md` や `references/knowledge/` に要約します。
 kernel 提出の操作履歴 `data/submissions.jsonl` と、CV / LB をまとめる `submit/submissions.csv` は役割が異なります。
 同梱版の revision と更新手順は [skill の管理情報](.claude/skills/README.md) を参照してください。
+
+[kaggle-knowledge-research](.claude/skills/kaggle-knowledge-research/SKILL.md)は[Everyday Kaggle News](https://upura.github.io/everyday-kaggle-news/)を入口に、原記事・スライド・論文・コードを確認して実験候補を絞ります。読めなかった資料は未確認とし、追加依存は不要です。依頼例：「kaggle-knowledge-researchを使い、現在の課題に近い解法から、出典と適用条件付きで実験候補を3件以内に絞ってください。」
 
 ## Claude CodeとCodexを併用する
 

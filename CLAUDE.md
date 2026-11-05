@@ -59,14 +59,14 @@
 | 外部知識 | `references/knowledge/`。URL・取得日・作者・要点・適用条件・リスクを要約しINDEXを更新 |
 | 作業の引き継ぎ | 必要時に`daily_reports/YYYYMMDD.md`。判断・未解決事項・次アクションだけ |
 
-- Kaggleの調査・操作は同梱の`.claude/skills/nvidia-kaggle-skill/`を使う。`SKILL.md`から必要なworkflowだけ読み、外部スクリプトは内容を確認して実行する。Kaggle以外には使わない。
+- 公式情報・Kaggle投稿取得や操作は`.claude/skills/nvidia-kaggle-skill/`、外部ノウハウ・類似解法の探索は`.claude/skills/kaggle-knowledge-research/`を使う。各`SKILL.md`から必要なworkflowだけ読み、外部スクリプトは内容を確認して実行する。一般的な調査には適用しない。
 - API利用前に`KAGGLE_API_TOKEN`の設定を確認する。未設定なら`.env.example`とKaggle設定画面を案内する。tokenは環境変数か`.env`から読み、表示・ログ出力・commitしない。
 - 調査結果・取得物は内容を確認して採用する。rawは`references/raw/`、実験に使った出典は実験メモへ残す。skillの`data/submissions.jsonl`は操作履歴であり、提出値の正本とは分ける。
 
 ## 提出
 
 - CSV / kernel用ひな形を必要に応じて使う。CSVは`scripts/validate_submission.py`で公式sampleと照合し、ラベル・値域等の追加条件は課題別ガイドを参照する。
-- 提出用READMEに元実験・config・環境・入力・checkpoint・推論設定・再現コマンドを残す。提出物を再生成し、学習側との推論の一致・実行制限・ルール適合を確認する。
+- 提出用READMEに元実験・config・環境・入力・checkpoint・推論設定・再現コマンドを残す。CSVは再生成と形式を検証し、コード提出は提出環境で梱包したコード・モデル・設定を最初から実行して出力・時間・メモリを確認する。ローカル実行だけでは提出環境で検証済みとせず、未実施・失敗は理由と未確認事項を記録する。学習側との推論の一致・ルール適合も確認する。
 - 提出で確認する仮説を明確にする。最終選択の期限と基準は再検証時間を残してoverviewへ記録し、Public LBだけで選ばない。複数枠では異なる弱点を持つ検証済み候補を検討する。
 - 実提出・dataset upload・public dataset作成はユーザー承認後に行う。
 - `scripts/record_submission.py`で提出記録を更新し、LB判明時に`scripts/plot_cv_lb.py`で関係を確認する。少数点の相関だけで自動採否しない。

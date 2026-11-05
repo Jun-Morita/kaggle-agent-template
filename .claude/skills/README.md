@@ -1,6 +1,15 @@
 # Project Skills
 
-This repository includes NVIDIA's project-local Kaggle skill:
+Project-local skills (Claude Code discovers them; Codex reads them through `AGENTS.md`):
+
+| Skill | Purpose |
+|---|---|
+| [nvidia-kaggle-skill](nvidia-kaggle-skill/SKILL.md) | Kaggle content retrieval and operations |
+| [kaggle-knowledge-research](kaggle-knowledge-research/SKILL.md) | Cross-competition research via Everyday Kaggle News; reads linked articles, slides, papers, and code with explicit evidence limits |
+
+The research skill is maintained in this template, uses existing browsing tools, and needs no additional runtime packages. The upstream revision below applies only to the NVIDIA skill.
+
+## NVIDIA skill
 
 ```text
 .claude/skills/
